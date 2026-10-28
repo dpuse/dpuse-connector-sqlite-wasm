@@ -182,10 +182,11 @@ function constructGroupedResultColumns(storedColumns: StoredColumn[], options: Q
     return [...groupColumns, ...aggregateColumns];
 }
 
-// Sorts name a position in the result, which SQL accepts as a 1-based column number.
+// Sorts name a position in the result, which SQL accepts as a 1-based column number. Empty values sort last, as in the
+// DuckDB store.
 function constructOrderSql(sorts: QuerySort[], resultColumnCount: number): string {
     if (sorts.length === 0) return '';
-    const sortSql = sorts.map((sort) => `${String(checkIndex(sort.columnIndex, resultColumnCount) + 1)} ${sort.directionId === 'descending' ? 'DESC' : 'ASC'}`);
+    const sortSql = sorts.map((sort) => `${String(checkIndex(sort.columnIndex, resultColumnCount) + 1)} ${sort.directionId === 'descending' ? 'DESC' : 'ASC'} NULLS LAST`);
     return ` ORDER BY ${sortSql.join(', ')}`;
 }
 

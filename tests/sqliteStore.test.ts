@@ -71,6 +71,14 @@ describe('sqliteStore', () => {
         expect(result.totalCount).toBe(4);
     });
 
+    it('sorts empty values last in either direction', () => {
+        const ascending = queryStoreObject(database, constructQuery({ sorts: [{ columnIndex: 2, directionId: 'ascending' }] }));
+        const descending = queryStoreObject(database, constructQuery({ sorts: [{ columnIndex: 2, directionId: 'descending' }] }));
+
+        expect(ascending.records.map((record) => record[2])).toEqual([1.5, 2.5, 10, null]);
+        expect(descending.records.map((record) => record[2])).toEqual([10, 2.5, 1.5, null]);
+    });
+
     it('filters records, matching wildcard characters as written', () => {
         const startsWith = queryStoreObject(database, constructQuery({ filters: [{ columnIndex: 0, operatorId: 'startsWith', value: 'East_' }] }));
         const emptyResult = queryStoreObject(database, constructQuery({ filters: [{ columnIndex: 3, operatorId: 'isEmpty', value: null }] }));
