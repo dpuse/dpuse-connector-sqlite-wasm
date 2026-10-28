@@ -39,20 +39,24 @@ This connector is a Bidirectional connector that supports both read and write ac
 | Action               | Supported |
 | :------------------- | :-------: |
 | Abort Operation      |     ✓     |
-| Audit Object Content |     ✓     |
-| Create Object        |     ✓     |
-| Describe Connection  |     ✓     |
+| Audit Object Content |           |
+| Close Store          |     ✓     |
+| Create Object        |           |
+| Describe Connection  |           |
 | Drop Object          |     ✓     |
-| Find Object          |     ✓     |
+| Find Object          |           |
 | Get Info             |           |
-| Get Readable Stream  |     ✓     |
-| Get Record           |     ✓     |
-| List Nodes           |     ✓     |
-| Preview Object       |     ✓     |
-| Remove Records       |     ✓     |
-| Retrieve Chunks      |     ✓     |
-| Retrieve Records     |     ✓     |
-| Upsert Records       |     ✓     |
+| Get Readable Stream  |           |
+| Get Record           |           |
+| List Nodes           |           |
+| Load Object Records  |     ✓     |
+| Open Store           |     ✓     |
+| Preview Object       |           |
+| Query Records        |     ✓     |
+| Remove Records       |           |
+| Retrieve Chunks      |           |
+| Retrieve Records     |           |
+| Upsert Records       |           |
 
 <!-- SUPPORTED_ACTIONS_END -->
 
@@ -80,19 +84,21 @@ This repository is managed using the common set of actions provided by [@dpuse/d
 
 ## Dependency Licenses
 
-License data is updated each time `npm run document` is run, using [license-checker](https://github.com/RSeidelsohn/license-checker-rseidelsohn). The following table lists every package whose code, styles or assets are included in this project's build, as recorded by the build itself. Modules loaded at run time are not included; each documents its own. These dependencies have been checked and confirmed to use MIT, all of which allow commercial use. All are used unmodified, so any licence conditions that apply only to modified versions are not triggered. Developers cloning this repository should independently verify development dependencies.
+License data is updated each time `npm run document` is run, using [license-checker](https://github.com/RSeidelsohn/license-checker-rseidelsohn). The following table lists every package whose code, styles or assets are included in this project's build, as recorded by the build itself. Modules loaded at run time are not included; each documents its own. These dependencies have been checked and confirmed to use Apache-2.0 or MIT, all of which allow commercial use. All are used unmodified, so any licence conditions that apply only to modified versions are not triggered. Developers cloning this repository should independently verify development dependencies.
 
-| Dependency                                                   | Version | License(s) | Document                                                              |
-| :----------------------------------------------------------- | :-----: | :--------- | :-------------------------------------------------------------------- |
-| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared) | 1.0.126 | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.126-LICENSE.txt) |
-| [valibot](https://github.com/open-circle/valibot)            |  1.5.0  | MIT        | [LICENSE](licenses/downloads/valibot@1.5.0-LICENSE.txt)               |
+| Dependency                                                       |    Version    | License(s) | Document                                                                        |
+| :--------------------------------------------------------------- | :-----------: | :--------- | :------------------------------------------------------------------------------ |
+| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)     |    1.0.160    | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.160-LICENSE.txt)           |
+| [@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm) | 3.54.1-build1 | Apache-2.0 | [LICENSE](licenses/downloads/@sqlite.org/sqlite-wasm@3.54.1-build1-LICENSE.txt) |
+| [valibot](https://github.com/open-circle/valibot)                |     1.5.0     | MIT        | [LICENSE](licenses/downloads/valibot@1.5.0-LICENSE.txt)                         |
 
 ### Dependency Tree
 
 The dependency tree below shows how each package in the table above is reached — direct and transitive — along with its installed version, release date, and update status. A package that does not ship itself, such as one whose parts are bundled separately, is left out and what ships beneath it is shown in its place. Packages flagged ❗ have a newer version available; ⚠️ indicates a package that hasn't been updated in the last 6 months or longer. Neither flag necessarily indicates a problem: we let new releases stabilise before upgrading, and some packages are mature and stable (have limited or no dependencies), so they require no active development.
 
-- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.126 — this month: 2026-10-19
+- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.160 — this month: 2026-10-28
     - **[valibot](https://github.com/open-circle/valibot)** 1.5.0 — 1 mth ago: 2026-09-09
+- **[@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm)** 3.54.1-build1 — this month: 2026-10-19
 
 <!-- DEPENDENCY_LICENSES_END -->
 
@@ -104,14 +110,18 @@ This report is updated with each release, from the bundle the release builds, us
 
 _Note: Sonda's Vite reports currently exclude CSS files, since Vite does not generate source maps for CSS._
 
-| Chunk/Module/File                                                     | Composition                                                                                   |
-| :-------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| **dist/dpuse-connector-sqlite-wasm.es.js**                               | 14.4&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;3.7&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
-| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `███████████░░░░░░░░░`&nbsp;56.6%&nbsp;·&nbsp;8.1&nbsp;kB                                     |
-| &nbsp;&nbsp;&nbsp;&nbsp;src → index.ts                                | `████░░░░░░░░░░░░░░░░`&nbsp;19.0%&nbsp;·&nbsp;2.7&nbsp;kB                                     |
-| &nbsp;&nbsp;&nbsp;&nbsp;(bundler output, whitespace & JSON)           | `█████░░░░░░░░░░░░░░░`&nbsp;24.4%&nbsp;·&nbsp;3.5&nbsp;kB                                     |
+| Chunk/Module/File                                                     | Composition                                                                                     |
+| :-------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 296.5&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;74.9&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
+| &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;81.8%&nbsp;·&nbsp;242.6&nbsp;kB                                     |
+| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `█░░░░░░░░░░░░░░░░░░░`&nbsp;2.9%&nbsp;·&nbsp;8.5&nbsp;kB                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;src → sqliteStore.ts + 1 more                 | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.5%&nbsp;·&nbsp;7.4&nbsp;kB                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ 2 smaller files     | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.5%&nbsp;·&nbsp;7.4&nbsp;kB                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;(bundler output, whitespace & JSON)           | `███░░░░░░░░░░░░░░░░░`&nbsp;12.8%&nbsp;·&nbsp;38.0&nbsp;kB                                      |
 
-Bars show each row's share of its output file.
+Bars show each row's share of its output file. ↳ rows are part of the row above.
+
+- n more = the row also holds n more files from the same package or folder, each no larger than the one named. A package can appear under several output files, each holding different files, never the same file twice.
 
 (bundler output, whitespace & JSON) = bytes Sonda can't trace to a source file: whitespace (indentation and line breaks), code the bundler generates (region comments, the combined import/export lines, its small runtime helper and wrappers), and imported JSON such as `config.json`, which the bundler doesn't map. The JSON and the generated code are real bytes that ship; the whitespace mostly disappears once compressed.
 
@@ -125,36 +135,36 @@ This section is updated each time `npm run document` is run. Settings come from 
 
 ### Testing
 
-| Check                | Status | What it does                                                                                                                                                                                                                                                                                                       |
-| :------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Check                | Status | What it does                                                                                                                                                                                                                                                                                                          |
+| :------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Unit tests           | ✅ On  | [Vitest](https://vitest.dev) runs the unit tests. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`.                                                                                                                  |
-| Property-based tests | ❌ Off | [fast-check](https://fast-check.dev) runs many random inputs per test to find edge cases, alongside the unit tests.                                                                                                                                                                                                |
+| Property-based tests | ❌ Off | [fast-check](https://fast-check.dev) runs many random inputs per test to find edge cases, alongside the unit tests.                                                                                                                                                                                                   |
 | Test coverage        | ✅ On  | ![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdpuse%2Fdpuse-connector-sqlite-wasm%2Fmain%2Fcode-health-reports%2Fvitest%2Fbadge.json) [Vitest's V8 coverage](https://vitest.dev/guide/coverage) measures the share of source lines the unit tests run. The target is 80%. |
 
 ### Code Quality
 
-| Check         | Status | What it does                                                                                                                                                                                                                                                                                                     |
-| :------------ | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code analysis | ✅ On  | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dpuse_dpuse-connector-sqlite-wasm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=dpuse_dpuse-connector-sqlite-wasm) [SonarCloud](https://sonarcloud.io) checks every push for bugs, code smells and vulnerabilities. |
-| Linting       | ✅ On  | [ESLint](https://eslint.org) checks the code for errors and style problems. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`.                                                                                      |
+| Check         | Status | What it does                                                                                                                                                                                                                   |
+| :------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code analysis | ❌ Off | [SonarCloud](https://sonarcloud.io) checks every push for bugs, code smells and vulnerabilities.                                                                                                                               |
+| Linting       | ✅ On  | [ESLint](https://eslint.org) checks the code for errors and style problems. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`. |
 
 ### Security Analysis
 
-| Check           | Status | What it does                                                                                                                                                                                                                                                                                                                                                                               |
-| :-------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Push protection | ✅ On  | [GitHub push protection](https://docs.github.com/en/code-security/secret-scanning/push-protection-for-repositories-and-organizations) blocks pushes that contain credentials.                                                                                                                                                                                                              |
+| Check           | Status | What it does                                                                                                                                                                                                                                                                                                                                                                                     |
+| :-------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Push protection | ❌ Off | [GitHub push protection](https://docs.github.com/en/code-security/secret-scanning/push-protection-for-repositories-and-organizations) blocks pushes that contain credentials.                                                                                                                                                                                                                    |
 | Static analysis | ✅ On  | [![CodeQL](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/codeql.yml/badge.svg)](https://github.com/dpuse/dpuse-connector-sqlite-wasm/security/code-scanning) [CodeQL](https://codeql.github.com) scans GitHub Actions and JavaScript/TypeScript for security vulnerabilities, using the extended security queries, on every push and pull request to `main` and weekly. |
-| Secret scanning | ✅ On  | [GitHub secret scanning](https://docs.github.com/en/code-security/secret-scanning) detects credentials, such as API keys and tokens, committed to the repository.                                                                                                                                                                                                                          |
+| Secret scanning | ❌ Off | [GitHub secret scanning](https://docs.github.com/en/code-security/secret-scanning) detects credentials, such as API keys and tokens, committed to the repository.                                                                                                                                                                                                                                |
 
 ### Dependencies
 
-| Check               | Status | What it does                                                                                                                                                                                                                                                                                                                    |
-| :------------------ | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Check               | Status | What it does                                                                                                                                                                                                                                                                                                                       |
+| :------------------ | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Vulnerability audit | ✅ On  | [npm audit](https://docs.npmjs.com/cli/commands/npm-audit) fails when a shipped dependency has any known vulnerability, or a development dependency has a high or critical one. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`. |
-| Supply chain risk   | ✅ On  | [Socket](https://socket.dev) flags malicious packages, typosquatting and suspicious behaviour that may not yet have a CVE.                                                                                                                                                                                                      |
-| Security alerts     | ✅ On  | [Dependabot](https://docs.github.com/en/code-security/dependabot) alerts when a dependency has a known vulnerability, using the GitHub Advisory Database.                                                                                                                                                                       |
-| Security updates    | ❌ Off | [Dependabot](https://docs.github.com/en/code-security/dependabot) opens pull requests that update vulnerable dependencies. These are handled manually.                                                                                                                                                                          |
-| Version updates     | ❌ Off | [Dependabot](https://docs.github.com/en/code-security/dependabot) opens pull requests for new dependency versions. These are handled manually.                                                                                                                                                                                  |
+| Supply chain risk   | ✅ On  | [Socket](https://socket.dev) flags malicious packages, typosquatting and suspicious behaviour that may not yet have a CVE.                                                                                                                                                                                                         |
+| Security alerts     | ✅ On  | [Dependabot](https://docs.github.com/en/code-security/dependabot) alerts when a dependency has a known vulnerability, using the GitHub Advisory Database.                                                                                                                                                                          |
+| Security updates    | ❌ Off | [Dependabot](https://docs.github.com/en/code-security/dependabot) opens pull requests that update vulnerable dependencies. These are handled manually.                                                                                                                                                                             |
+| Version updates     | ❌ Off | [Dependabot](https://docs.github.com/en/code-security/dependabot) opens pull requests for new dependency versions. These are handled manually.                                                                                                                                                                                     |
 
 ### OpenSSF 🚧
 
@@ -164,7 +174,7 @@ This project is working towards the [OpenSSF Best Practices](https://www.bestpra
 
 ### Reporting Vulnerabilities
 
-Please do not open public GitHub issues for security vulnerabilities. Use [GitHub private vulnerability reporting](https://github.com/dpuse/dpuse-connector-sqlite-wasm/security/advisories/new) instead. See [SECURITY.md](./SECURITY.md) for the full disclosure policy, contact details, and expected response times.
+Please do not open public GitHub issues for security vulnerabilities. See [SECURITY.md](./SECURITY.md) for how to report one privately, the full disclosure policy, and expected response times.
 
 <!-- QUALITY_SECURITY_END -->
 

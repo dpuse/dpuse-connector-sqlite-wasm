@@ -1,7 +1,7 @@
 {
   "metadata": {
     "version": "0.14.0",
-    "generatedAt": "2026-10-28T15:39:25.059Z",
+    "generatedAt": "2026-10-28T20:34:09.041Z",
     "integration": "vite",
     "sources": false,
     "gzip": true,
@@ -37,8 +37,8 @@
       "kind": "asset",
       "name": "dist/dpuse-connector-sqlite-wasm.es.js",
       "type": "script",
-      "uncompressed": 303565,
-      "gzip": 76719,
+      "uncompressed": 303576,
+      "gzip": 76729,
       "brotli": 0
     },
     {
@@ -71,7 +71,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 248378,
-      "gzip": 69641,
+      "gzip": 69644,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -97,15 +97,15 @@
       "name": "src/sqliteStore.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 7853
+      "uncompressed": 7864
     },
     {
       "kind": "chunk",
       "name": "src/sqliteStore.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 4816,
-      "gzip": 1942,
+      "uncompressed": 4827,
+      "gzip": 1950,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     }

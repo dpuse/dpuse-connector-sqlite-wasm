@@ -1,14 +1,14 @@
 {
-  "version": "1.0.207",
+  "version": "1.0.2",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
-      "version": "1.0.127",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.127.tgz",
+      "version": "1.0.141",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.141.tgz",
       "overridden": false,
       "dependencies": {
         "@dpuse/dpuse-shared": {
-          "version": "1.0.126"
+          "version": "1.0.160"
         },
         "license-checker-rseidelsohn": {
           "version": "5.0.1",
@@ -1194,8 +1194,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.126",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.126.tgz",
+      "version": "1.0.160",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.160.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -3152,6 +3152,11 @@
           }
         }
       }
+    },
+    "@sqlite.org/sqlite-wasm": {
+      "version": "3.54.1-build1",
+      "resolved": "https://registry.npmjs.org/@sqlite.org/sqlite-wasm/-/sqlite-wasm-3.54.1-build1.tgz",
+      "overridden": false
     },
     "@types/node": {
       "version": "26.6.5",
