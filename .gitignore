@@ -1,0 +1,31 @@
+# Default '.gitignore' configuration for DPUse projects.
+.dev.vars
+.env*
+.eslintcache
+.fallow
+.wrangler
+coverage
+dist
+node_modules
+*.tsbuildinfo
+**/.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Rust
+rust/*/pkg
+rust/*/target
+rust/target
+
+# Testing
+__screenshots__/
+test-results/
+playwright-report/
+
+# VitePress
+site/kb/
+site/.vitepress/cache
+site/.vitepress/dist

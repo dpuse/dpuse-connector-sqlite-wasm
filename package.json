@@ -1,0 +1,81 @@
+{
+    "name": "@dpuse/dpuse-connector-sqlite-wasm",
+    "version": "1.0.0",
+    "private": false,
+    "description": "Stores data views for investigation in a SQLite database saved in the browser (OPFS).",
+    "license": "MIT",
+    "author": "Jonathan Terrell <terrell.jm@gmail.com>",
+    "type": "module",
+    "sideEffects": false,
+    "homepage": "https://www.dpuse.app",
+    "bugs": {
+        "url": "https://github.com/dpuse/dpuse-connector-sqlite-wasm/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dpuse/dpuse-connector-sqlite-wasm.git"
+    },
+    "module": "./dist/dpuse-connector-sqlite-wasm.es.js",
+    "types": "./dist/types/src/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/src/index.d.ts",
+            "import": "./dist/dpuse-connector-sqlite-wasm.es.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=24",
+        "npm": ">=12"
+    },
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": ">=24",
+            "onFail": "error"
+        },
+        "packageManager": {
+            "name": "npm",
+            "version": ">=12",
+            "onFail": "error"
+        }
+    },
+    "prettier": "@dpuse/dpuse-development/prettierrc",
+    "allowScripts": {
+        "fsevents@2.3.3": true,
+        "unrs-resolver@1.12.2": true,
+        "esbuild@0.28.2": true,
+        "workerd@1.20261019.1": true
+    },
+    "scripts": {
+        "audit": "node -e \"import('@dpuse/dpuse-development').then(m => m.auditDependencies())\"",
+        "build": "node -e \"import('@dpuse/dpuse-development').then(m => m.buildProject())\"",
+        "check": "node -e \"import('@dpuse/dpuse-development').then(m => m.checkProject())\"",
+        "document": "node -e \"import('@dpuse/dpuse-development').then(m => m.documentProject('MIT'))\"",
+        "format": "node -e \"import('@dpuse/dpuse-development').then(m => m.formatCode())\"",
+        "lint": "node -e \"import('@dpuse/dpuse-development').then(m => m.lintCode())\"",
+        "release": "npm run build && npm run document && npm run sync && node -e \"import('@dpuse/dpuse-development').then(m => m.triggerGitHubRelease())\"",
+        "sync": "node -e \"import('@dpuse/dpuse-development').then(m => m.syncProjectWithGitHub())\"",
+        "test": "node -e \"import('@dpuse/dpuse-development').then(m => m.testProject())\""
+    },
+    "dependencies": {
+        "@dpuse/dpuse-shared": "^1.0.159",
+        "@sqlite.org/sqlite-wasm": "3.54.1-build1"
+    },
+    "devDependencies": {
+        "@dpuse/dpuse-development": "^1.0.139",
+        "@dpuse/eslint-config-dpuse": "^1.0.141",
+        "@types/node": "^26.6.5",
+        "@vitest/coverage-v8": "^5.0.5",
+        "eslint": "^10.13.0",
+        "prettier": "^3.9.10",
+        "sonda": "^0.14.0",
+        "typescript": "^6.0.3",
+        "vite": "^8.3.4",
+        "vite-plugin-dts": "^5.1.2",
+        "vitest": "^5.0.5",
+        "wrangler": "^4.151.2"
+    }
+}

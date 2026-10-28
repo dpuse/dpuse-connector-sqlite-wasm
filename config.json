@@ -1,0 +1,39 @@
+{
+    "id": "dpuse-connector-sqlite-wasm",
+    "label": {
+        "en": "SQLite"
+    },
+    "description": {
+        "en": "Stores data views for investigation in a SQLite database saved in the browser's private file system (OPFS). Data stays on this device. Only one tab can use it at a time. Lighter than DuckDB: a small download and little memory, with slower grouping on large data."
+    },
+    "actionNames": [
+        "abortOperation",
+        "closeStore",
+        "dropObject",
+        "loadObjectRecords",
+        "openStore",
+        "queryRecords"
+    ],
+    "category": null,
+    "categoryId": "database",
+    "firstCreatedAt": null,
+    "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#71717a\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"/><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"/><path d=\"M3 12A9 3 0 0 0 21 12\"/></svg>",
+    "iconDark": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#a1a1aa\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"/><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"/><path d=\"M3 12A9 3 0 0 0 21 12\"/></svg>",
+    "implementations": {
+        "default": {
+            "authMethodId": "none",
+            "maxConnectionCount": 1
+        }
+    },
+    "itemTypeId": "table",
+    "lastUpdatedAt": null,
+    "status": null,
+    "statusId": "alpha",
+    "typeId": "connector",
+    "usage": null,
+    "usageId": "bidirectional",
+    "vendorAccountURL": null,
+    "vendorDocumentationURL": "https://sqlite.org/wasm/doc/trunk/index.md",
+    "vendorHomeURL": "https://sqlite.org/",
+    "version": "1.0.0"
+}

@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "declaration": true,
+        "esModuleInterop": true,
+        "exactOptionalPropertyTypes": true,
+        "incremental": true,
+        "isolatedModules": true,
+        "lib": ["DOM", "ESNext"],
+        "module": "ESNext",
+        "moduleDetection": "force",
+        "moduleResolution": "bundler",
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "outDir": "dist",
+        "paths": { "~/*": ["./*"], "@/*": ["./src/*"] },
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "ESNext",
+        "tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo"
+    },
+    "include": ["eslint.config.js", "eslint.config.*.js", "src/**/*.ts", "tests/**/*.ts", "vite.config.*", "vitest.config.*"]
+}

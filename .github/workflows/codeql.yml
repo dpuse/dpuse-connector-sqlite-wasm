@@ -1,0 +1,53 @@
+name: 'CodeQL Advanced'
+
+on:
+    push:
+        branches: ['main']
+    pull_request:
+        branches: ['main']
+    schedule:
+        - cron: '28 18 * * 6'
+
+permissions: {}
+
+jobs:
+    analyze:
+        name: Analyze (${{ matrix.language }})
+        runs-on: ubuntu-latest
+        permissions:
+            security-events: write
+            packages: read
+            contents: read
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - language: actions
+                      build-mode: none
+                    - language: javascript-typescript
+                      build-mode: none
+                    - language: rust
+                      build-mode: none
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # CodeQL fails when asked to scan a language the project has no code in, so the Rust scan is skipped in projects
+            # without Rust. Its job still appears in those projects, but does nothing.
+            - name: Initialize CodeQL
+              if: matrix.language != 'rust' || hashFiles('rust/Cargo.toml') != ''
+              uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+              with:
+                  languages: ${{ matrix.language }}
+                  build-mode: ${{ matrix.build-mode }}
+                  # More security queries than the default suite, some less precise. Code quality is left to ESLint, SonarCloud
+                  # and Fallow.
+                  queries: security-extended
+
+            - name: Perform CodeQL Analysis
+              if: matrix.language != 'rust' || hashFiles('rust/Cargo.toml') != ''
+              uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+              with:
+                  category: '/language:${{matrix.language}}'
