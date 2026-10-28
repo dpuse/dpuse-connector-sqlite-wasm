@@ -53,7 +53,7 @@
         "audit": "node -e \"import('@dpuse/dpuse-development').then(m => m.auditDependencies())\"",
         "build": "node -e \"import('@dpuse/dpuse-development').then(m => m.buildProject())\"",
         "check": "node -e \"import('@dpuse/dpuse-development').then(m => m.checkProject())\"",
-        "document": "node -e \"import('@dpuse/dpuse-development').then(m => m.documentProject('MIT'))\"",
+        "document": "node -e \"import('@dpuse/dpuse-development').then(m => m.documentProject('Apache-2.0;MIT'))\"",
         "format": "node -e \"import('@dpuse/dpuse-development').then(m => m.formatCode())\"",
         "lint": "node -e \"import('@dpuse/dpuse-development').then(m => m.lintCode())\"",
         "release": "npm run build && npm run document && npm run sync && node -e \"import('@dpuse/dpuse-development').then(m => m.triggerGitHubRelease())\"",
