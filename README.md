@@ -112,12 +112,12 @@ _Note: Sonda's Vite reports currently exclude CSS files, since Vite does not gen
 
 | Chunk/Module/File                                                     | Composition                                                                                     |
 | :-------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 297.4&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;75.7&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
-| &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;81.6%&nbsp;·&nbsp;242.6&nbsp;kB                                     |
-| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `█░░░░░░░░░░░░░░░░░░░`&nbsp;2.9%&nbsp;·&nbsp;8.5&nbsp;kB                                        |
+| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 298.8&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;75.7&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
+| &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;81.2%&nbsp;·&nbsp;242.6&nbsp;kB                                     |
+| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `█░░░░░░░░░░░░░░░░░░░`&nbsp;2.8%&nbsp;·&nbsp;8.5&nbsp;kB                                        |
 | &nbsp;&nbsp;&nbsp;&nbsp;src → sqliteStore.ts + 1 more                 | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.5%&nbsp;·&nbsp;7.4&nbsp;kB                                        |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ 2 smaller files     | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.5%&nbsp;·&nbsp;7.4&nbsp;kB                                        |
-| &nbsp;&nbsp;&nbsp;&nbsp;(bundler output, whitespace & JSON)           | `███░░░░░░░░░░░░░░░░░`&nbsp;13.1%&nbsp;·&nbsp;38.9&nbsp;kB                                      |
+| &nbsp;&nbsp;&nbsp;&nbsp;(bundler output, whitespace & JSON)           | `███░░░░░░░░░░░░░░░░░`&nbsp;13.5%&nbsp;·&nbsp;40.4&nbsp;kB                                      |
 
 Bars show each row's share of its output file. ↳ rows are part of the row above.
 
