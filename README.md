@@ -143,10 +143,10 @@ This section is updated each time `npm run document` is run. Settings come from 
 
 ### Code Quality
 
-| Check         | Status | What it does                                                                                                                                                                                                                   |
-| :------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code analysis | ❌ Off | [SonarCloud](https://sonarcloud.io) checks every push for bugs, code smells and vulnerabilities.                                                                                                                               |
-| Linting       | ✅ On  | [ESLint](https://eslint.org) checks the code for errors and style problems. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`. |
+| Check         | Status | What it does                                                                                                                                                                                                                                                                                                           |
+| :------------ | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code analysis | ✅ On  | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dpuse_dpuse-connector-sqlite-wasm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=dpuse_dpuse-connector-sqlite-wasm) [SonarCloud](https://sonarcloud.io) checks every push for bugs, code smells and vulnerabilities. |
+| Linting       | ✅ On  | [ESLint](https://eslint.org) checks the code for errors and style problems. Part of the [CI workflow](https://github.com/dpuse/dpuse-connector-sqlite-wasm/actions/workflows/ci.yml) on every push and pull request to `main`.                                                                                         |
 
 ### Security Analysis
 

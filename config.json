@@ -12,13 +12,7 @@
         "dropObject",
         "loadObjectRecords",
         "openStore",
-        "queryRecords",
-        "acquireLock",
-        "establishDatabase",
-        "establishPool",
-        "loadSqlite",
-        "initialiseSqlite",
-        "releaseHeldLock"
+        "queryRecords"
     ],
     "category": null,
     "categoryId": "database",
@@ -41,5 +35,5 @@
     "vendorAccountURL": null,
     "vendorDocumentationURL": "https://sqlite.org/wasm/doc/trunk/index.md",
     "vendorHomeURL": "https://sqlite.org/",
-    "version": "1.0.3"
+    "version": "1.0.4"
 }

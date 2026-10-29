@@ -134,7 +134,7 @@ export class Connector implements ConnectorInterface {
     // Asks for the lock without waiting, so a tab that cannot have it is told at once. The lock is held until
     // 'releaseHeldLock' is called.
     // A request that fails, e.g. where Web Locks are blocked, ends first and so rejects.
-    async acquireLock(): Promise<boolean> {
+    private async acquireLock(): Promise<boolean> {
         const lockAcquisition = Promise.withResolvers<boolean>();
         const lockRequest = navigator.locks.request(LOCK_NAME, { ifAvailable: true }, (lock) => {
             if (lock == null) {
@@ -153,13 +153,13 @@ export class Connector implements ConnectorInterface {
         return await Promise.race([lockAcquisition.promise, endedRequest]);
     }
 
-    establishDatabase(): OpfsSAHPoolDatabase {
+    private establishDatabase(): OpfsSAHPoolDatabase {
         if (!this.database) throw new Error('The store is not open.');
         return this.database;
     }
 
     // Returns nothing when the browser gives no private file system, e.g. in some private windows.
-    async establishPool(sqlite3: Sqlite3Static): Promise<SAHPoolUtil | undefined> {
+    private async establishPool(sqlite3: Sqlite3Static): Promise<SAHPoolUtil | undefined> {
         try {
             if (this.poolUtility) return this.poolUtility.isPaused() ? await this.poolUtility.unpauseVfs() : this.poolUtility;
             this.poolUtility = await sqlite3.installOpfsSAHPoolVfs({ name: POOL_NAME });
@@ -171,12 +171,12 @@ export class Connector implements ConnectorInterface {
 
     // Loads the '.wasm' file from beside this connector's own script, wherever that is served from. A failed load is
     // forgotten, so the next open tries again.
-    loadSqlite(): Promise<Sqlite3Static> {
+    private loadSqlite(): Promise<Sqlite3Static> {
         this.pendingSqlite ??= this.initialiseSqlite();
         return this.pendingSqlite;
     }
 
-    async initialiseSqlite(): Promise<Sqlite3Static> {
+    private async initialiseSqlite(): Promise<Sqlite3Static> {
         try {
             return await initialiseSqliteModule({ locateFile: (path) => new URL(path, import.meta.url).href });
         } catch (error) {
@@ -185,7 +185,7 @@ export class Connector implements ConnectorInterface {
         }
     }
 
-    releaseHeldLock(): void {
+    private releaseHeldLock(): void {
         this.releaseLock?.();
         this.releaseLock = undefined;
     }
