@@ -1,6 +1,6 @@
 {
     "name": "@dpuse/dpuse-connector-sqlite-wasm",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "private": false,
     "description": "Stores data views for investigation in a SQLite database saved in the browser (OPFS).",
     "license": "MIT",
