@@ -35,5 +35,5 @@
     "vendorAccountURL": null,
     "vendorDocumentationURL": "https://sqlite.org/wasm/doc/trunk/index.md",
     "vendorHomeURL": "https://sqlite.org/",
-    "version": "1.0.7"
+    "version": "1.0.8"
 }

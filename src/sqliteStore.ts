@@ -21,6 +21,7 @@ import type {
 interface StoredColumn {
     dataSubtypeId: DataSubtypeId | undefined;
     dataTypeId: DataTypeId;
+    isDayNumber: boolean | undefined; // Set for a column of dates, each stored as a count of days. A column loaded before this holds milliseconds.
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -29,6 +30,8 @@ interface StoredColumn {
 const OBJECTS_TABLE = '_dpuse_objects';
 
 const LIKE_ESCAPE_SQL = String.raw`ESCAPE '\'`; // Lets a filter match '%' and '_' as written, not as wildcards.
+
+const MILLISECONDS_PER_DAY = 86_400_000;
 
 // ── Actions ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -52,7 +55,11 @@ export async function loadStoreObject(
     chunks: AsyncIterable<StoreRecord[]>,
     signal: AbortSignal
 ): Promise<number> {
-    const storedColumns: StoredColumn[] = columnConfigs.map(({ dataSubtypeId, dataTypeId }) => ({ dataSubtypeId, dataTypeId }));
+    const storedColumns: StoredColumn[] = columnConfigs.map(({ dataSubtypeId, dataTypeId }) => ({
+        dataSubtypeId,
+        dataTypeId,
+        isDayNumber: dataTypeId === 'temporal' && dataSubtypeId === 'date'
+    }));
     const columnDefinitions = storedColumns.map((storedColumn, columnIndex) => `${columnName(columnIndex)} ${resolveColumnType(storedColumn)}`);
     const tableName = quoteIdentifier(path);
     let recordCount = 0;
@@ -68,7 +75,7 @@ export async function loadStoreObject(
                 for await (const records of chunks) {
                     signal.throwIfAborted();
                     for (const record of records) {
-                        statement.bind(storedColumns.map((_storedColumn, columnIndex) => toBindableValue(record[columnIndex] ?? null))).stepReset();
+                        statement.bind(storedColumns.map((storedColumn, columnIndex) => toBindableValue(record[columnIndex] ?? null, storedColumn))).stepReset();
                     }
                     recordCount += records.length;
                 }
@@ -142,7 +149,7 @@ function constructAggregateSql(aggregate: QueryAggregate): string {
 
 function constructFilterSql(filter: QueryFilter, storedColumns: StoredColumn[]): { sql: string; values: BindableValue[] } {
     const name = columnName(checkIndex(filter.columnIndex, storedColumns.length));
-    const value = toBindableValue(filter.value);
+    const value = toBindableValue(filter.value, storedColumns[filter.columnIndex]);
     const text = escapeLikeText(String(filter.value ?? ''));
     switch (filter.operatorId) {
         case 'contains':
@@ -191,15 +198,19 @@ function constructOrderSql(sorts: QuerySort[], resultColumnCount: number): strin
 }
 
 function escapeLikeText(text: string): string {
-    return text.replaceAll('\\', '\\\\').replaceAll('%', String.raw`\%`).replaceAll('_', String.raw`\_`);
+    return text
+        .replaceAll('\\', '\\\\')
+        .replaceAll('%', String.raw`\%`)
+        .replaceAll('_', String.raw`\_`);
 }
 
-// Booleans are stored as 1 and 0, and dates as milliseconds since 1970, so both sort and compare correctly.
+// Booleans are stored as 1 and 0. A date is stored as a count of days since 1970, a date and time as milliseconds since
+// 1970, and a time as milliseconds since midnight. All of them sort and compare correctly, and take the least space.
 // eslint-disable-next-line sonarjs/function-return-type -- A store value is one of several types, by its column.
 function fromStoredValue(value: unknown, storedColumn: StoredColumn | undefined): StoreValue {
     if (value == null) return null;
     if (storedColumn?.dataTypeId === 'boolean') return value === 1 || value === 1n;
-    if (storedColumn?.dataTypeId === 'temporal') return new Date(Number(value));
+    if (storedColumn?.dataTypeId === 'temporal') return new Date(Number(value) * (storedColumn.isDayNumber === true ? MILLISECONDS_PER_DAY : 1));
     return typeof value === 'bigint' || typeof value === 'number' || typeof value === 'string' ? value : null;
 }
 
@@ -229,8 +240,8 @@ function retrieveStoredColumns(database: Database, path: string): StoredColumn[]
 }
 
 // eslint-disable-next-line sonarjs/function-return-type -- A bound value is one of several types, by its column.
-function toBindableValue(value: StoreValue): BindableValue {
-    if (value instanceof Date) return value.getTime();
+function toBindableValue(value: StoreValue, storedColumn: StoredColumn | undefined): BindableValue {
+    if (value instanceof Date) return storedColumn?.isDayNumber === true ? Math.floor(value.getTime() / MILLISECONDS_PER_DAY) : value.getTime();
     if (typeof value === 'boolean') return value ? 1 : 0;
     return value;
 }

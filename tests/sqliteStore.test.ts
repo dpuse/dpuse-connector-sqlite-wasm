@@ -138,3 +138,93 @@ describe('sqliteStore', () => {
         expect(() => queryStoreObject(database, constructQuery({}))).toThrow("'sales' has not been loaded.");
     });
 });
+
+describe('sqliteStore temporal round trip', () => {
+    const DAY = 86_400_000;
+    const TEMPORAL_COLUMN_CONFIGS = [constructColumnConfig('temporal', 'date'), constructColumnConfig('temporal', 'time'), constructColumnConfig('temporal', 'dateTime')];
+    let database: Database;
+
+    function constructTemporalRecord(dayNumber: number, timeOfDay: number): StoreRecord {
+        return [new Date(dayNumber * DAY), new Date(timeOfDay), new Date(dayNumber * DAY + timeOfDay)];
+    }
+
+    async function load(records: StoreRecord[]): Promise<void> {
+        await loadStoreObject(database, 'dates', TEMPORAL_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
+    }
+
+    function query(options: Partial<QueryRecordsOptions>): StoreRecord[] {
+        return queryStoreObject(database, constructQuery({ path: 'dates', ...options })).records;
+    }
+
+    beforeEach(() => {
+        database = new sqlite3.oo1.DB(':memory:');
+        ensureObjectsTable(database);
+    });
+
+    it('returns every date, time and date-time exactly as loaded, across the whole calendar and day', async () => {
+        const firstDay = Date.UTC(1000, 0, 1) / DAY;
+        const lastDay = Date.UTC(9999, 11, 31) / DAY;
+        const records: StoreRecord[] = [];
+        for (let dayNumber = firstDay; dayNumber <= lastDay; dayNumber += 97) records.push(constructTemporalRecord(dayNumber, (dayNumber - firstDay) % DAY));
+        records.push(constructTemporalRecord(0, 0), constructTemporalRecord(-1, DAY - 1), constructTemporalRecord(lastDay, DAY - 1));
+
+        await load(records);
+
+        expect(query({ limit: records.length })).toEqual(records);
+    });
+
+    it('stores a date as a whole number of days, and a date-time and a time as milliseconds', async () => {
+        await load([constructTemporalRecord(19_786, 36_672_123)]);
+
+        expect(database.selectArrays('SELECT c0, c1, c2 FROM dates')).toEqual([[19_786, 36_672_123, 19_786 * DAY + 36_672_123]]);
+    });
+
+    it('filters, sorts, groups and finds the earliest and latest date by the value loaded', async () => {
+        await load([constructTemporalRecord(19_786, 3000), constructTemporalRecord(19_787, 2000), constructTemporalRecord(19_785, 1000), constructTemporalRecord(19_786, 4000)]);
+        const targetDate = new Date(19_786 * DAY);
+
+        expect(query({ filters: [{ columnIndex: 0, operatorId: 'equals', value: targetDate }] })).toHaveLength(2);
+        expect(query({ filters: [{ columnIndex: 0, operatorId: 'greaterThan', value: targetDate }] })).toHaveLength(1);
+        expect(query({ filters: [{ columnIndex: 1, operatorId: 'lessThan', value: new Date(2000) }] })).toHaveLength(1);
+        expect(query({ filters: [{ columnIndex: 2, operatorId: 'greaterThanOrEquals', value: new Date(19_787 * DAY) }] })).toHaveLength(1);
+        expect(query({ sorts: [{ columnIndex: 0, directionId: 'ascending' }] }).map((record) => record[0])).toEqual([
+            new Date(19_785 * DAY),
+            targetDate,
+            targetDate,
+            new Date(19_787 * DAY)
+        ]);
+        expect(
+            query({
+                aggregates: [{ columnIndex: undefined, functionId: 'count' }],
+                groupColumnIndexes: [0],
+                sorts: [{ columnIndex: 0, directionId: 'ascending' }]
+            })
+        ).toEqual([
+            [new Date(19_785 * DAY), 1],
+            [targetDate, 2],
+            [new Date(19_787 * DAY), 1]
+        ]);
+        expect(
+            query({
+                aggregates: [
+                    { columnIndex: 0, functionId: 'minimum' },
+                    { columnIndex: 0, functionId: 'maximum' }
+                ],
+                groupColumnIndexes: [1],
+                limit: 1,
+                sorts: [{ columnIndex: 0, directionId: 'ascending' }]
+            })
+        ).toEqual([[new Date(1000), new Date(19_785 * DAY), new Date(19_785 * DAY)]]);
+    });
+
+    it('still reads a date column loaded before dates were stored as day numbers', async () => {
+        await load([constructTemporalRecord(19_786, 0)]);
+        database.exec({ sql: 'UPDATE dates SET c0 = ?', bind: [19_786 * DAY] });
+        database.exec({
+            sql: "UPDATE _dpuse_objects SET columns = ? WHERE path = 'dates'",
+            bind: [JSON.stringify(TEMPORAL_COLUMN_CONFIGS.map(({ dataSubtypeId, dataTypeId }) => ({ dataSubtypeId, dataTypeId })))]
+        });
+
+        expect(query({})[0]?.[0]).toEqual(new Date(19_786 * DAY));
+    });
+});
