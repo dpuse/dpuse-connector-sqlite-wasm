@@ -206,11 +206,14 @@ function escapeLikeText(text: string): string {
 
 // Booleans are stored as 1 and 0. A date is stored as a count of days since 1970, a date and time as milliseconds since
 // 1970, and a time as milliseconds since midnight. All of them sort and compare correctly, and take the least space.
+// SQLite returns a whole number as a bigint only when it is too large to be exact, so a column of whole numbers beyond
+// ±2^53 turns its smaller values into bigints too, and holds one type throughout.
 // eslint-disable-next-line sonarjs/function-return-type -- A store value is one of several types, by its column.
 function fromStoredValue(value: unknown, storedColumn: StoredColumn | undefined): StoreValue {
     if (value == null) return null;
     if (storedColumn?.dataTypeId === 'boolean') return value === 1 || value === 1n;
     if (storedColumn?.dataTypeId === 'temporal') return new Date(Number(value) * (storedColumn.isDayNumber === true ? MILLISECONDS_PER_DAY : 1));
+    if (typeof value === 'number' && storedColumn?.dataSubtypeId === 'bigint') return BigInt(value);
     return typeof value === 'bigint' || typeof value === 'number' || typeof value === 'string' ? value : null;
 }
 

@@ -139,6 +139,25 @@ describe('sqliteStore', () => {
     });
 });
 
+describe('sqliteStore large number round trip', () => {
+    it('returns a column of whole numbers beyond ±2^53 exactly as bigints, other whole numbers as numbers, in numeric order', async () => {
+        const database = new sqlite3.oo1.DB(':memory:');
+        ensureObjectsTable(database);
+        const records: StoreRecord[] = [[9_223_372_036_854_775_807n, 1], [-9_223_372_036_854_775_808n, 2], [9_007_199_254_740_993n, 3], [42n, 4]];
+        await loadStoreObject(
+            database,
+            'large',
+            [constructColumnConfig('numeric', 'bigint'), constructColumnConfig('numeric', 'integer')],
+            yieldChunks([records]),
+            new AbortController().signal
+        );
+
+        const result = queryStoreObject(database, constructQuery({ path: 'large', sorts: [{ columnIndex: 0, directionId: 'ascending' }] }));
+
+        expect(result.records).toEqual([[-9_223_372_036_854_775_808n, 2], [42n, 4], [9_007_199_254_740_993n, 3], [9_223_372_036_854_775_807n, 1]]);
+    });
+});
+
 describe('sqliteStore temporal round trip', () => {
     const DAY = 86_400_000;
     const TEMPORAL_COLUMN_CONFIGS = [constructColumnConfig('temporal', 'date'), constructColumnConfig('temporal', 'time'), constructColumnConfig('temporal', 'dateTime')];

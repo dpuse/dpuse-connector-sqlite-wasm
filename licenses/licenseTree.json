@@ -1,14 +1,14 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
-      "version": "1.0.141",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.141.tgz",
+      "version": "1.0.145",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.145.tgz",
       "overridden": false,
       "dependencies": {
         "@dpuse/dpuse-shared": {
-          "version": "1.0.165"
+          "version": "1.0.179"
         },
         "license-checker-rseidelsohn": {
           "version": "5.0.1",
@@ -93,7 +93,7 @@
                       "version": "5.0.0"
                     },
                     "pacote": {
-                      "version": "21.5.1"
+                      "version": "21.5.2"
                     },
                     "proc-log": {
                       "version": "6.1.0"
@@ -638,8 +638,8 @@
                   }
                 },
                 "pacote": {
-                  "version": "21.5.1",
-                  "resolved": "https://registry.npmjs.org/pacote/-/pacote-21.5.1.tgz",
+                  "version": "21.5.2",
+                  "resolved": "https://registry.npmjs.org/pacote/-/pacote-21.5.2.tgz",
                   "overridden": false,
                   "dependencies": {
                     "@gar/promise-retry": {
@@ -1194,8 +1194,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.165",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.165.tgz",
+      "version": "1.0.179",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.179.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -1212,16 +1212,16 @@
                   "version": "4.4.3"
                 },
                 "strtok3": {
-                  "version": "10.6.3"
+                  "version": "10.7.0"
                 },
                 "token-types": {
-                  "version": "6.1.2"
+                  "version": "6.2.0"
                 }
               }
             },
             "strtok3": {
-              "version": "10.6.3",
-              "resolved": "https://registry.npmjs.org/strtok3/-/strtok3-10.6.3.tgz",
+              "version": "10.7.0",
+              "resolved": "https://registry.npmjs.org/strtok3/-/strtok3-10.7.0.tgz",
               "overridden": false,
               "dependencies": {
                 "@tokenizer/token": {
@@ -1232,8 +1232,8 @@
               }
             },
             "token-types": {
-              "version": "6.1.2",
-              "resolved": "https://registry.npmjs.org/token-types/-/token-types-6.1.2.tgz",
+              "version": "6.2.0",
+              "resolved": "https://registry.npmjs.org/token-types/-/token-types-6.2.0.tgz",
               "overridden": false,
               "dependencies": {
                 "@borewit/text-codec": {
@@ -1264,8 +1264,8 @@
       }
     },
     "@dpuse/eslint-config-dpuse": {
-      "version": "1.0.145",
-      "resolved": "https://registry.npmjs.org/@dpuse/eslint-config-dpuse/-/eslint-config-dpuse-1.0.145.tgz",
+      "version": "1.0.148",
+      "resolved": "https://registry.npmjs.org/@dpuse/eslint-config-dpuse/-/eslint-config-dpuse-1.0.148.tgz",
       "overridden": false,
       "dependencies": {
         "@eslint-community/eslint-plugin-eslint-comments": {
@@ -1277,7 +1277,7 @@
               "version": "4.0.0"
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "ignore": {
               "version": "7.0.10",
@@ -1292,7 +1292,7 @@
           "overridden": false,
           "dependencies": {
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             }
           }
         },
@@ -1302,7 +1302,7 @@
           "overridden": false,
           "dependencies": {
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             }
           }
         },
@@ -1335,7 +1335,7 @@
             },
             "eslint-plugin-import": {},
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "get-tsconfig": {
               "version": "4.14.0",
@@ -1445,7 +1445,7 @@
                   "version": "8.72.1"
                 },
                 "eslint": {
-                  "version": "10.13.0"
+                  "version": "10.14.0"
                 },
                 "typescript": {
                   "version": "6.0.3"
@@ -1465,7 +1465,7 @@
             },
             "eslint-import-resolver-node": {},
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "is-glob": {
               "version": "4.0.3"
@@ -1561,14 +1561,7 @@
                   "version": "1.7.0"
                 },
                 "jsdoc-type-pratt-parser": {
-                  "version": "9.4.0",
-                  "resolved": "https://registry.npmjs.org/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-9.4.0.tgz",
-                  "overridden": false,
-                  "dependencies": {
-                    "@types/estree": {
-                      "version": "1.0.9"
-                    }
-                  }
+                  "version": "9.4.0"
                 }
               }
             },
@@ -1597,7 +1590,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "espree": {
               "version": "11.2.0"
@@ -1705,7 +1698,7 @@
                   "overridden": false,
                   "dependencies": {
                     "eslint": {
-                      "version": "10.13.0"
+                      "version": "10.14.0"
                     },
                     "semver": {
                       "version": "7.8.5"
@@ -1713,12 +1706,12 @@
                   }
                 },
                 "eslint": {
-                  "version": "10.13.0"
+                  "version": "10.14.0"
                 }
               }
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "get-tsconfig": {
               "version": "4.14.0"
@@ -1760,8 +1753,8 @@
           }
         },
         "eslint-plugin-regexp": {
-          "version": "3.3.1",
-          "resolved": "https://registry.npmjs.org/eslint-plugin-regexp/-/eslint-plugin-regexp-3.3.1.tgz",
+          "version": "3.3.3",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-regexp/-/eslint-plugin-regexp-3.3.3.tgz",
           "overridden": false,
           "dependencies": {
             "@eslint-community/eslint-utils": {
@@ -1774,18 +1767,15 @@
               "version": "1.4.9"
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "jsdoc-type-pratt-parser": {
-              "version": "9.2.2",
-              "resolved": "https://registry.npmjs.org/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-9.2.2.tgz",
+              "version": "9.4.0",
+              "resolved": "https://registry.npmjs.org/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-9.4.0.tgz",
               "overridden": false,
               "dependencies": {
                 "@types/estree": {
                   "version": "1.0.9"
-                },
-                "@types/node": {
-                  "version": "26.6.6"
                 }
               }
             },
@@ -1831,8 +1821,8 @@
           }
         },
         "eslint-plugin-security": {
-          "version": "4.2.0",
-          "resolved": "https://registry.npmjs.org/eslint-plugin-security/-/eslint-plugin-security-4.2.0.tgz",
+          "version": "4.2.1",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-security/-/eslint-plugin-security-4.2.1.tgz",
           "overridden": false,
           "dependencies": {
             "safe-regex": {
@@ -1873,7 +1863,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "functional-red-black-tree": {
               "version": "1.0.1",
@@ -1881,7 +1871,7 @@
               "overridden": false
             },
             "globals": {
-              "version": "17.13.0"
+              "version": "17.14.0"
             },
             "jsx-ast-utils-x": {
               "version": "0.1.0",
@@ -2019,7 +2009,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "find-up-simple": {
               "version": "1.0.1",
@@ -2027,7 +2017,7 @@
               "overridden": false
             },
             "globals": {
-              "version": "17.13.0"
+              "version": "17.14.0"
             },
             "identifier-regex": {
               "version": "1.1.0",
@@ -2429,11 +2419,11 @@
           }
         },
         "eslint": {
-          "version": "10.13.0"
+          "version": "10.14.0"
         },
         "globals": {
-          "version": "17.13.0",
-          "resolved": "https://registry.npmjs.org/globals/-/globals-17.13.0.tgz",
+          "version": "17.14.0",
+          "resolved": "https://registry.npmjs.org/globals/-/globals-17.14.0.tgz",
           "overridden": false
         },
         "typescript-eslint": {
@@ -2473,7 +2463,7 @@
                       "version": "4.4.3"
                     },
                     "eslint": {
-                      "version": "10.13.0"
+                      "version": "10.14.0"
                     },
                     "ts-api-utils": {
                       "version": "2.5.0"
@@ -2500,7 +2490,7 @@
                   }
                 },
                 "eslint": {
-                  "version": "10.13.0"
+                  "version": "10.14.0"
                 },
                 "ignore": {
                   "version": "7.0.10"
@@ -2537,7 +2527,7 @@
                   "version": "4.4.3"
                 },
                 "eslint": {
-                  "version": "10.13.0"
+                  "version": "10.14.0"
                 },
                 "typescript": {
                   "version": "6.0.3"
@@ -2608,7 +2598,7 @@
               "version": "8.72.1"
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             },
             "typescript": {
               "version": "6.0.3"
@@ -2635,8 +2625,8 @@
       }
     },
     "@vitest/coverage-v8": {
-      "version": "5.0.5",
-      "resolved": "https://registry.npmjs.org/@vitest/coverage-v8/-/coverage-v8-5.0.5.tgz",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/@vitest/coverage-v8/-/coverage-v8-5.1.0.tgz",
       "overridden": false,
       "dependencies": {
         "@bcoe/v8-coverage": {
@@ -2646,17 +2636,17 @@
         },
         "@vitest/browser": {},
         "@vitest/istanbul-lib-coverage": {
-          "version": "1.0.2",
-          "resolved": "https://registry.npmjs.org/@vitest/istanbul-lib-coverage/-/istanbul-lib-coverage-1.0.2.tgz",
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/@vitest/istanbul-lib-coverage/-/istanbul-lib-coverage-2.1.0.tgz",
           "overridden": false
         },
         "@vitest/istanbul-lib-report": {
-          "version": "1.0.2",
-          "resolved": "https://registry.npmjs.org/@vitest/istanbul-lib-report/-/istanbul-lib-report-1.0.2.tgz",
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/@vitest/istanbul-lib-report/-/istanbul-lib-report-2.1.0.tgz",
           "overridden": false,
           "dependencies": {
             "@vitest/istanbul-lib-coverage": {
-              "version": "1.0.2"
+              "version": "2.1.0"
             }
           }
         },
@@ -2752,13 +2742,13 @@
           "overridden": false
         },
         "vitest": {
-          "version": "5.0.5"
+          "version": "5.1.0"
         }
       }
     },
     "eslint": {
-      "version": "10.13.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-10.13.0.tgz",
+      "version": "10.14.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-10.14.0.tgz",
       "overridden": false,
       "dependencies": {
         "@eslint-community/eslint-utils": {
@@ -2772,7 +2762,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.13.0"
+              "version": "10.14.0"
             }
           }
         },
@@ -3722,8 +3712,8 @@
       }
     },
     "vitest": {
-      "version": "5.0.5",
-      "resolved": "https://registry.npmjs.org/vitest/-/vitest-5.0.5.tgz",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-5.1.0.tgz",
       "overridden": false,
       "dependencies": {
         "@edge-runtime/vm": {},
@@ -3753,19 +3743,19 @@
         "@vitest/browser-webdriverio": {},
         "@vitest/coverage-istanbul": {},
         "@vitest/coverage-v8": {
-          "version": "5.0.5"
+          "version": "5.1.0"
         },
         "@vitest/mocker": {
-          "version": "5.0.5",
-          "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.0.5.tgz",
+          "version": "5.1.0",
+          "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.1.0.tgz",
           "overridden": false,
           "dependencies": {
             "@jridgewell/trace-mapping": {
               "version": "0.3.31"
             },
             "@vitest/spy": {
-              "version": "5.0.5",
-              "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-5.0.5.tgz",
+              "version": "5.1.0",
+              "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-5.1.0.tgz",
               "overridden": false
             },
             "estree-walker": {
@@ -3779,8 +3769,8 @@
               }
             },
             "magic-string": {
-              "version": "1.4.3",
-              "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-1.4.3.tgz",
+              "version": "1.4.5",
+              "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-1.4.5.tgz",
               "overridden": false,
               "dependencies": {
                 "@jridgewell/sourcemap-codec": {
@@ -3813,8 +3803,8 @@
         "happy-dom": {},
         "jsdom": {},
         "magic-string": {
-          "version": "1.4.3",
-          "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-1.4.3.tgz",
+          "version": "1.4.5",
+          "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-1.4.5.tgz",
           "overridden": false,
           "dependencies": {
             "@jridgewell/sourcemap-codec": {
@@ -3834,8 +3824,8 @@
           "version": "4.3.0"
         },
         "tinybench": {
-          "version": "6.2.2",
-          "resolved": "https://registry.npmjs.org/tinybench/-/tinybench-6.2.2.tgz",
+          "version": "6.2.3",
+          "resolved": "https://registry.npmjs.org/tinybench/-/tinybench-6.2.3.tgz",
           "overridden": false
         },
         "tinyexec": {
@@ -3857,8 +3847,8 @@
       }
     },
     "wrangler": {
-      "version": "4.156.0",
-      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.156.0.tgz",
+      "version": "4.157.0",
+      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.157.0.tgz",
       "overridden": false,
       "dependencies": {
         "@cloudflare/kv-asset-handler": {
@@ -3875,11 +3865,31 @@
               "version": "2.0.0-rc.24"
             },
             "workerd": {
-              "version": "1.20261023.1"
+              "version": "1.20261103.1"
             }
           }
         },
         "@cloudflare/workers-types": {},
+        "@cspotcode/source-map-support": {
+          "version": "0.8.1",
+          "resolved": "https://registry.npmjs.org/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@jridgewell/trace-mapping": {
+              "version": "0.3.9",
+              "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.9.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@jridgewell/resolve-uri": {
+                  "version": "3.1.2"
+                },
+                "@jridgewell/sourcemap-codec": {
+                  "version": "1.6.0"
+                }
+              }
+            }
+          }
+        },
         "blake3-wasm": {
           "version": "2.1.5",
           "resolved": "https://registry.npmjs.org/blake3-wasm/-/blake3-wasm-2.1.5.tgz",
@@ -3892,29 +3902,12 @@
           "version": "2.3.3"
         },
         "miniflare": {
-          "version": "5.20261023.3-beta",
-          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261023.3-beta.tgz",
+          "version": "5.20261103.0-beta",
+          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261103.0-beta.tgz",
           "overridden": false,
           "dependencies": {
             "@cspotcode/source-map-support": {
-              "version": "0.8.1",
-              "resolved": "https://registry.npmjs.org/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz",
-              "overridden": false,
-              "dependencies": {
-                "@jridgewell/trace-mapping": {
-                  "version": "0.3.9",
-                  "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.9.tgz",
-                  "overridden": false,
-                  "dependencies": {
-                    "@jridgewell/resolve-uri": {
-                      "version": "3.1.2"
-                    },
-                    "@jridgewell/sourcemap-codec": {
-                      "version": "1.6.0"
-                    }
-                  }
-                }
-              }
+              "version": "0.8.1"
             },
             "sharp": {
               "version": "0.35.5",
@@ -3978,7 +3971,7 @@
               "overridden": false
             },
             "workerd": {
-              "version": "1.20261023.1"
+              "version": "1.20261103.1"
             },
             "ws": {
               "version": "8.21.0",
@@ -4075,14 +4068,14 @@
           }
         },
         "workerd": {
-          "version": "1.20261023.1",
-          "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20261023.1.tgz",
+          "version": "1.20261103.1",
+          "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20261103.1.tgz",
           "overridden": false,
           "dependencies": {
             "@cloudflare/workerd-darwin-64": {},
             "@cloudflare/workerd-darwin-arm64": {
-              "version": "1.20261023.1",
-              "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20261023.1.tgz",
+              "version": "1.20261103.1",
+              "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20261103.1.tgz",
               "overridden": false
             },
             "@cloudflare/workerd-linux-64": {},
