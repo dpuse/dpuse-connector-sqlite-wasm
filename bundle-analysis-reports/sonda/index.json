@@ -1,7 +1,7 @@
 {
   "metadata": {
     "version": "0.14.0",
-    "generatedAt": "2026-11-06T12:08:27.803Z",
+    "generatedAt": "2026-11-06T16:11:00.499Z",
     "integration": "vite",
     "sources": false,
     "gzip": true,
@@ -21,8 +21,8 @@
       "name": "[unassigned]",
       "type": "other",
       "format": "other",
-      "uncompressed": 41288,
-      "gzip": 2009,
+      "uncompressed": 41227,
+      "gzip": 1968,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -37,8 +37,8 @@
       "kind": "asset",
       "name": "dist/dpuse-connector-sqlite-wasm.es.js",
       "type": "script",
-      "uncompressed": 306103,
-      "gzip": 77579,
+      "uncompressed": 305319,
+      "gzip": 77315,
       "brotli": 0
     },
     {
@@ -46,15 +46,15 @@
       "name": "node_modules/@dpuse/dpuse-shared/dist/dpuse-shared.es.js",
       "type": "script",
       "format": "esm",
-      "uncompressed": 73339
+      "uncompressed": 57409
     },
     {
       "kind": "chunk",
       "name": "node_modules/@dpuse/dpuse-shared/dist/dpuse-shared.es.js",
       "type": "script",
       "format": "esm",
-      "uncompressed": 8703,
-      "gzip": 2855,
+      "uncompressed": 7985,
+      "gzip": 2588,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -71,7 +71,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 248287,
-      "gzip": 69662,
+      "gzip": 69703,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -88,7 +88,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 2740,
-      "gzip": 980,
+      "gzip": 979,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -104,8 +104,8 @@
       "name": "src/sqliteStore.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 5085,
-      "gzip": 2074,
+      "uncompressed": 5080,
+      "gzip": 2076,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     }
