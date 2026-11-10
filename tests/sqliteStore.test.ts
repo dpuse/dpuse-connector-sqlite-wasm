@@ -8,9 +8,7 @@ import type { DataSubtypeId, DataTypeId, ObjectColumnConfig, QueryRecordsOptions
 // ── Local Framework
 import { dropStoreObject, ensureObjectsTable, loadStoreObject, queryStoreObject } from '@/sqliteStore';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-const sqlite3 = await sqlite3InitModule();
+// ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const COLUMN_CONFIGS = [
     constructColumnConfig('string'),
@@ -26,24 +24,9 @@ const RECORDS: StoreRecord[] = [
     ['East_1', 4, 10, true, new Date('2026-05-06')]
 ];
 
-function constructColumnConfig(dataTypeId: DataTypeId, dataSubtypeId?: DataSubtypeId): ObjectColumnConfig {
-    return { dataSubtypeId, dataTypeId } as ObjectColumnConfig;
-}
+// ── State ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function constructQuery(options: Partial<QueryRecordsOptions>): QueryRecordsOptions {
-    return { aggregates: [], filters: [], groupColumnIndexes: [], limit: 100, offset: 0, path: 'sales', sorts: [], ...options };
-}
-
-// A stream stands in for the engine's queue of chunks, as both are read with 'for await'.
-function yieldChunks(chunks: StoreRecord[][], error?: Error): ReadableStream<StoreRecord[]> {
-    return new ReadableStream({
-        start(controller): void {
-            for (const chunk of chunks) controller.enqueue(chunk);
-            if (error) controller.error(error);
-            else controller.close();
-        }
-    });
-}
+const sqlite3 = await sqlite3InitModule();
 
 // ── Tests ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -143,7 +126,12 @@ describe('sqliteStore large number round trip', () => {
     it('returns a column of whole numbers beyond ±2^53 exactly as bigints, other whole numbers as numbers, in numeric order', async () => {
         const database = new sqlite3.oo1.DB(':memory:');
         ensureObjectsTable(database);
-        const records: StoreRecord[] = [[9_223_372_036_854_775_807n, 1], [-9_223_372_036_854_775_808n, 2], [9_007_199_254_740_993n, 3], [42n, 4]];
+        const records: StoreRecord[] = [
+            [9_223_372_036_854_775_807n, 1],
+            [-9_223_372_036_854_775_808n, 2],
+            [9_007_199_254_740_993n, 3],
+            [42n, 4]
+        ];
         await loadStoreObject(
             database,
             'large',
@@ -154,7 +142,12 @@ describe('sqliteStore large number round trip', () => {
 
         const result = queryStoreObject(database, constructQuery({ path: 'large', sorts: [{ columnIndex: 0, directionId: 'ascending' }] }));
 
-        expect(result.records).toEqual([[-9_223_372_036_854_775_808n, 2], [42n, 4], [9_007_199_254_740_993n, 3], [9_223_372_036_854_775_807n, 1]]);
+        expect(result.records).toEqual([
+            [-9_223_372_036_854_775_808n, 2],
+            [42n, 4],
+            [9_007_199_254_740_993n, 3],
+            [9_223_372_036_854_775_807n, 1]
+        ]);
     });
 });
 
@@ -247,3 +240,24 @@ describe('sqliteStore temporal round trip', () => {
         expect(query({})[0]?.[0]).toEqual(new Date(19_786 * DAY));
     });
 });
+
+// ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+function constructColumnConfig(dataTypeId: DataTypeId, dataSubtypeId?: DataSubtypeId): ObjectColumnConfig {
+    return { dataSubtypeId, dataTypeId } as ObjectColumnConfig;
+}
+
+function constructQuery(options: Partial<QueryRecordsOptions>): QueryRecordsOptions {
+    return { aggregates: [], filters: [], groupColumnIndexes: [], limit: 100, offset: 0, path: 'sales', sorts: [], ...options };
+}
+
+// A stream stands in for the engine's queue of chunks, as both are read with 'for await'.
+function yieldChunks(chunks: StoreRecord[][], error?: Error): ReadableStream<StoreRecord[]> {
+    return new ReadableStream({
+        start(controller): void {
+            for (const chunk of chunks) controller.enqueue(chunk);
+            if (error) controller.error(error);
+            else controller.close();
+        }
+    });
+}

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "version": "0.14.0",
-    "generatedAt": "2026-11-09T11:59:18.315Z",
+    "generatedAt": "2026-11-10T12:30:59.922Z",
     "integration": "vite",
     "sources": false,
     "gzip": true,
@@ -21,24 +21,17 @@
       "name": "[unassigned]",
       "type": "other",
       "format": "other",
-      "uncompressed": 41227,
-      "gzip": 1968,
+      "uncompressed": 37260,
+      "gzip": 478,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
-    },
-    {
-      "kind": "filesystem",
-      "name": "config.json",
-      "type": "script",
-      "format": "esm",
-      "uncompressed": 4518
     },
     {
       "kind": "asset",
       "name": "dist/dpuse-connector-sqlite-wasm.es.js",
       "type": "script",
-      "uncompressed": 305319,
-      "gzip": 77315,
+      "uncompressed": 301373,
+      "gzip": 75909,
       "brotli": 0
     },
     {
@@ -46,7 +39,7 @@
       "name": "node_modules/@dpuse/dpuse-shared/dist/dpuse-shared.es.js",
       "type": "script",
       "format": "esm",
-      "uncompressed": 57659
+      "uncompressed": 61854
     },
     {
       "kind": "chunk",
@@ -54,7 +47,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 7985,
-      "gzip": 2588,
+      "gzip": 2590,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -71,7 +64,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 248287,
-      "gzip": 69703,
+      "gzip": 69774,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -80,15 +73,15 @@
       "name": "src/index.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 4057
+      "uncompressed": 4077
     },
     {
       "kind": "chunk",
       "name": "src/index.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 2740,
-      "gzip": 979,
+      "uncompressed": 2761,
+      "gzip": 989,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -105,7 +98,7 @@
       "type": "script",
       "format": "esm",
       "uncompressed": 5080,
-      "gzip": 2076,
+      "gzip": 2078,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     }

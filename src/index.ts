@@ -5,7 +5,6 @@ import type { OpfsSAHPoolDatabase, SAHPoolUtil, Sqlite3Static } from '@sqlite.or
 // ── DPUse Framework
 import { normalizeToError } from '@dpuse/dpuse-shared';
 import type {
-    ConnectorConfig,
     ConnectorInterface,
     ConnectorUtilities,
     DropObjectOptions,
@@ -21,9 +20,6 @@ import type {
 // ── Local Framework
 import { dropStoreObject, ensureObjectsTable, loadStoreObject, queryStoreObject } from '@/sqliteStore';
 
-// ── Data
-import config from '~/config.json';
-
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const DATABASE_PATH = '/dpuse-store.sqlite3';
@@ -38,18 +34,16 @@ const initialiseSqliteModule = sqlite3InitModule as (moduleArgument: { locateFil
 // Keeps data views in one SQLite database saved in the browser's private file system (OPFS). Only one tab can open the
 // database, so opening takes a Web Lock first and closing releases it.
 export class Connector implements ConnectorInterface {
-    abortController: AbortController | undefined;
-    readonly config: ConnectorConfig;
-    connectorUtilities: ConnectorUtilities;
+    private abortController: AbortController | undefined; // The latest operation's. An operation that ends clears it only if no later one has replaced it.
+    private readonly connectorUtilities: ConnectorUtilities;
+    private readonly toolConfigs;
     database: OpfsSAHPoolDatabase | undefined;
     pendingSqlite: Promise<Sqlite3Static> | undefined;
     poolUtility: SAHPoolUtil | undefined;
     releaseLock: (() => void) | undefined;
-    readonly toolConfigs;
 
     constructor(connectorUtilities: ConnectorUtilities, toolConfigs: ToolConfig[]) {
         this.abortController = undefined;
-        this.config = config as ConnectorConfig;
         this.connectorUtilities = connectorUtilities;
         this.database = undefined;
         this.pendingSqlite = undefined;
@@ -91,14 +85,15 @@ export class Connector implements ConnectorInterface {
     }
 
     async loadObjectRecords(options: LoadObjectRecordsOptions, chunks: AsyncIterable<StoreRecord[]>): Promise<LoadObjectRecordsResult> {
-        this.abortController = new AbortController();
+        const abortController = new AbortController();
+        this.abortController = abortController;
         try {
             const recordCount = await loadStoreObject(this.establishDatabase(), options.path, options.columnConfigs, chunks, this.abortController.signal);
             return { recordCount };
         } catch (error) {
             throw normalizeToError(error);
         } finally {
-            this.abortController = undefined;
+            if (this.abortController === abortController) this.abortController = undefined;
         }
     }
 
