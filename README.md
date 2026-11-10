@@ -88,7 +88,7 @@ License data is updated each time `npm run document` is run, using [license-chec
 
 | Dependency                                                       |    Version    | License(s) | Document                                                                        |
 | :--------------------------------------------------------------- | :-----------: | :--------- | :------------------------------------------------------------------------------ |
-| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)     |    1.0.205    | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.205-LICENSE.txt)           |
+| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)     |    1.0.206    | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.206-LICENSE.txt)           |
 | [@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm) | 3.54.1-build1 | Apache-2.0 | [LICENSE](licenses/downloads/@sqlite.org/sqlite-wasm@3.54.1-build1-LICENSE.txt) |
 | [valibot](https://github.com/open-circle/valibot)                |     1.5.0     | MIT        | [LICENSE](licenses/downloads/valibot@1.5.0-LICENSE.txt)                         |
 
@@ -96,7 +96,7 @@ License data is updated each time `npm run document` is run, using [license-chec
 
 The dependency tree below shows how each package in the table above is reached — direct and transitive — along with its installed version, release date, and update status. A package that does not ship itself, such as one whose parts are bundled separately, is left out and what ships beneath it is shown in its place. Packages flagged ❗ have a newer version available; ⚠️ indicates a package that hasn't been updated in the last 6 months or longer. Neither flag necessarily indicates a problem: we let new releases stabilise before upgrading, and some packages are mature and stable (have limited or no dependencies), so they require no active development.
 
-- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.205 — this month: 2026-11-10
+- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.206 — this month: 2026-11-10
     - **[valibot](https://github.com/open-circle/valibot)** 1.5.0 — 2 mths ago: 2026-09-09
 - **[@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm)** 3.54.1-build1 — this month: 2026-10-19
 
