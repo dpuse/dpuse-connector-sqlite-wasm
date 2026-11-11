@@ -7,7 +7,6 @@
         "en": "Stores data views for investigation in a SQLite database saved in the browser's private file system (OPFS). Data stays on this device. Only one tab can use it at a time. Lighter than DuckDB: a small download and little memory, with slower grouping on large data."
     },
     "actionNames": [
-        "abortOperation",
         "closeStore",
         "dropObject",
         "loadObjectRecords",
@@ -35,5 +34,5 @@
     "vendorAccountURL": null,
     "vendorDocumentationURL": "https://sqlite.org/wasm/doc/trunk/index.md",
     "vendorHomeURL": "https://sqlite.org/",
-    "version": "1.0.117"
+    "version": "1.0.118"
 }

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "version": "0.14.0",
-    "generatedAt": "2026-11-11T09:32:17.242Z",
+    "generatedAt": "2026-11-11T17:45:11.738Z",
     "integration": "vite",
     "sources": false,
     "gzip": true,
@@ -21,7 +21,7 @@
       "name": "[unassigned]",
       "type": "other",
       "format": "other",
-      "uncompressed": 37260,
+      "uncompressed": 37298,
       "gzip": 478,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
@@ -30,8 +30,8 @@
       "kind": "asset",
       "name": "dist/dpuse-connector-sqlite-wasm.es.js",
       "type": "script",
-      "uncompressed": 301373,
-      "gzip": 75909,
+      "uncompressed": 301952,
+      "gzip": 76099,
       "brotli": 0
     },
     {
@@ -39,15 +39,15 @@
       "name": "node_modules/@dpuse/dpuse-shared/dist/dpuse-shared.es.js",
       "type": "script",
       "format": "esm",
-      "uncompressed": 61854
+      "uncompressed": 64487
     },
     {
       "kind": "chunk",
       "name": "node_modules/@dpuse/dpuse-shared/dist/dpuse-shared.es.js",
       "type": "script",
       "format": "esm",
-      "uncompressed": 7985,
-      "gzip": 2590,
+      "uncompressed": 8609,
+      "gzip": 2875,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -63,8 +63,8 @@
       "name": "node_modules/@sqlite.org/sqlite-wasm/dist/index.mjs",
       "type": "script",
       "format": "esm",
-      "uncompressed": 248287,
-      "gzip": 69774,
+      "uncompressed": 248286,
+      "gzip": 69657,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -73,15 +73,15 @@
       "name": "src/index.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 4077
+      "uncompressed": 4171
     },
     {
       "kind": "chunk",
       "name": "src/index.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 2761,
-      "gzip": 989,
+      "uncompressed": 2671,
+      "gzip": 1015,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     },
@@ -97,8 +97,8 @@
       "name": "src/sqliteStore.ts",
       "type": "script",
       "format": "esm",
-      "uncompressed": 5080,
-      "gzip": 2078,
+      "uncompressed": 5088,
+      "gzip": 2074,
       "brotli": 0,
       "parent": "dist/dpuse-connector-sqlite-wasm.es.js"
     }

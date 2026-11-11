@@ -3,7 +3,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import type { OpfsSAHPoolDatabase, SAHPoolUtil, Sqlite3Static } from '@sqlite.org/sqlite-wasm';
 
 // ── DPUse Framework
-import { normalizeToError } from '@dpuse/dpuse-shared';
+import { acquireWebLock, normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
 import type {
     ConnectorInterface,
     ConnectorUtilities,
@@ -22,7 +22,8 @@ import { dropStoreObject, ensureObjectsTable, loadStoreObject, queryStoreObject 
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-const DATABASE_PATH = '/dpuse-store.sqlite3';
+const DEFAULT_DATABASE_PATH = '/dpuse-store.sqlite3'; // Used by a path that names no database.
+const FILES_PER_DATABASE = 2; // The database file, and the journal written beside it while a change is saved.
 const LOCK_NAME = 'dpuse-connector-sqlite-wasm'; // Held by the one tab that has the store open.
 const POOL_NAME = 'dpuse-connector-sqlite-wasm';
 
@@ -31,21 +32,20 @@ const initialiseSqliteModule = sqlite3InitModule as (moduleArgument: { locateFil
 
 // ── Connector ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// Keeps data views in one SQLite database saved in the browser's private file system (OPFS). Only one tab can open the
-// database, so opening takes a Web Lock first and closing releases it.
+// Keeps data views in SQLite databases saved in the browser's private file system (OPFS). A path '/database/table' names
+// its database, and each database is a file of its own, opened on first use. Only one tab can open the store, so opening
+// takes a Web Lock first and closing releases it, for every database at once.
 export class Connector implements ConnectorInterface {
-    private abortController: AbortController | undefined; // The latest operation's. An operation that ends clears it only if no later one has replaced it.
     private readonly connectorUtilities: ConnectorUtilities;
     private readonly toolConfigs;
-    database: OpfsSAHPoolDatabase | undefined;
+    databases: Map<string, OpfsSAHPoolDatabase>; // By database name. The default database's name is ''.
     pendingSqlite: Promise<Sqlite3Static> | undefined;
     poolUtility: SAHPoolUtil | undefined;
     releaseLock: (() => void) | undefined;
 
     constructor(connectorUtilities: ConnectorUtilities, toolConfigs: ToolConfig[]) {
-        this.abortController = undefined;
         this.connectorUtilities = connectorUtilities;
-        this.database = undefined;
+        this.databases = new Map();
         this.pendingSqlite = undefined;
         this.poolUtility = undefined;
         this.releaseLock = undefined;
@@ -54,18 +54,12 @@ export class Connector implements ConnectorInterface {
 
     // ── Operations ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-    abortOperation(): void {
-        if (!this.abortController) return;
-        this.abortController.abort();
-        this.abortController = undefined;
-    }
-
     // The pool keeps its files open until it is paused, which would stop another tab opening the store after this one
     // has closed it.
     closeStore(): Promise<void> {
         try {
-            this.database?.close();
-            this.database = undefined;
+            for (const database of this.databases.values()) database.close();
+            this.databases.clear();
             if (this.poolUtility?.isPaused() === false) this.poolUtility.pauseVfs();
             return Promise.resolve();
         } catch (error) {
@@ -75,31 +69,30 @@ export class Connector implements ConnectorInterface {
         }
     }
 
-    dropObject(options: DropObjectOptions): Promise<void> {
+    async dropObject(options: DropObjectOptions): Promise<void> {
         try {
-            dropStoreObject(this.establishDatabase(), options.path);
-            return Promise.resolve();
+            const { database, tableName } = await this.establishDatabase(options.path);
+            dropStoreObject(database, tableName);
         } catch (error) {
-            return Promise.reject(normalizeToError(error));
+            throw normalizeToError(error);
         }
     }
 
     async loadObjectRecords(options: LoadObjectRecordsOptions, chunks: AsyncIterable<StoreRecord[]>): Promise<LoadObjectRecordsResult> {
-        const abortController = new AbortController();
-        this.abortController = abortController;
         try {
-            const recordCount = await loadStoreObject(this.establishDatabase(), options.path, options.columnConfigs, chunks, this.abortController.signal);
+            const { database, tableName } = await this.establishDatabase(options.path);
+            const recordCount = await loadStoreObject(database, tableName, options.columnConfigs, chunks, resolveRequestSignal(options));
             return { recordCount };
         } catch (error) {
             throw normalizeToError(error);
-        } finally {
-            if (this.abortController === abortController) this.abortController = undefined;
         }
     }
 
     async openStore(): Promise<OpenStoreResult> {
-        if (this.database) return { storeStateId: 'ready' };
-        if (!(await this.acquireLock())) return { storeStateId: 'heldElsewhere' };
+        if (this.databases.size > 0) return { storeStateId: 'ready' };
+        const releaseLock = await acquireWebLock(LOCK_NAME); // Held until the store closes.
+        if (releaseLock == null) return { storeStateId: 'heldElsewhere' };
+        this.releaseLock = releaseLock;
         try {
             const sqlite3 = await this.loadSqlite();
             const poolUtility = await this.establishPool(sqlite3);
@@ -107,8 +100,9 @@ export class Connector implements ConnectorInterface {
                 this.releaseHeldLock();
                 return { storeStateId: 'unavailable' };
             }
-            this.database = new poolUtility.OpfsSAHPoolDb(DATABASE_PATH);
-            ensureObjectsTable(this.database);
+            const defaultDatabase = new poolUtility.OpfsSAHPoolDb(DEFAULT_DATABASE_PATH);
+            ensureObjectsTable(defaultDatabase);
+            this.databases.set('', defaultDatabase);
             return { storeStateId: 'ready' };
         } catch (error) {
             this.releaseHeldLock();
@@ -116,41 +110,31 @@ export class Connector implements ConnectorInterface {
         }
     }
 
-    queryRecords(options: QueryRecordsOptions): Promise<QueryRecordsResult> {
+    async queryRecords(options: QueryRecordsOptions): Promise<QueryRecordsResult> {
         try {
-            return Promise.resolve(queryStoreObject(this.establishDatabase(), options));
+            const { database, tableName } = await this.establishDatabase(options.path);
+            return queryStoreObject(database, { ...options, path: tableName });
         } catch (error) {
-            return Promise.reject(normalizeToError(error));
+            throw normalizeToError(error);
         }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    // Asks for the lock without waiting, so a tab that cannot have it is told at once. The lock is held until
-    // 'releaseHeldLock' is called.
-    // A request that fails, e.g. where Web Locks are blocked, ends first and so rejects.
-    private async acquireLock(): Promise<boolean> {
-        const lockAcquisition = Promise.withResolvers<boolean>();
-        const lockRequest = navigator.locks.request(LOCK_NAME, { ifAvailable: true }, (lock) => {
-            if (lock == null) {
-                lockAcquisition.resolve(false);
-                return;
-            }
-            lockAcquisition.resolve(true);
-            return new Promise<void>((release) => {
-                this.releaseLock = release;
-            });
-        });
-        const endedRequest = (async (): Promise<boolean> => {
-            await lockRequest;
-            return false;
-        })();
-        return await Promise.race([lockAcquisition.promise, endedRequest]);
-    }
-
-    private establishDatabase(): OpfsSAHPoolDatabase {
-        if (!this.database) throw new Error('The store is not open.');
-        return this.database;
+    // Opens a named database on first use. The pool holds a set number of files, so it is grown first when it has too
+    // few free for another database.
+    private async establishDatabase(path: string): Promise<{ database: OpfsSAHPoolDatabase; tableName: string }> {
+        const poolUtility = this.poolUtility;
+        if (poolUtility == null || this.databases.size === 0) throw new Error('The store is not open.');
+        const { databaseName = '', tableName } = resolveStorePath(path);
+        let database = this.databases.get(databaseName);
+        if (database == null) {
+            if (poolUtility.getCapacity() - poolUtility.getFileCount() < FILES_PER_DATABASE) await poolUtility.addCapacity(FILES_PER_DATABASE);
+            database = new poolUtility.OpfsSAHPoolDb(`/${databaseName}.sqlite3`);
+            ensureObjectsTable(database);
+            this.databases.set(databaseName, database);
+        }
+        return { database, tableName };
     }
 
     // Returns nothing when the browser gives no private file system, e.g. in some private windows.
