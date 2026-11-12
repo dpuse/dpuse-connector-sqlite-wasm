@@ -18,7 +18,7 @@ import type {
 } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
-import { dropStoreObject, ensureObjectsTable, loadStoreObject, queryStoreObject } from '@/sqliteStore';
+import { dropStoreObject, loadStoreObject, queryStoreObject } from '@/sqliteStore';
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -101,7 +101,6 @@ export class Connector implements ConnectorInterface {
                 return { storeStateId: 'unavailable' };
             }
             const defaultDatabase = new poolUtility.OpfsSAHPoolDb(DEFAULT_DATABASE_PATH);
-            ensureObjectsTable(defaultDatabase);
             this.databases.set('', defaultDatabase);
             return { storeStateId: 'ready' };
         } catch (error) {
@@ -131,7 +130,6 @@ export class Connector implements ConnectorInterface {
         if (database == null) {
             if (poolUtility.getCapacity() - poolUtility.getFileCount() < FILES_PER_DATABASE) await poolUtility.addCapacity(FILES_PER_DATABASE);
             database = new poolUtility.OpfsSAHPoolDb(`/${databaseName}.sqlite3`);
-            ensureObjectsTable(database);
             this.databases.set(databaseName, database);
         }
         return { database, tableName };

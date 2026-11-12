@@ -6,7 +6,7 @@ import sqlite3InitModule, { type Database } from '@sqlite.org/sqlite-wasm';
 import type { DataSubtypeId, DataTypeId, ObjectColumnConfig, QueryRecordsOptions, StoreRecord } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
-import { dropStoreObject, ensureObjectsTable, loadStoreObject, queryStoreObject } from '@/sqliteStore';
+import { dropStoreObject, loadStoreObject, queryStoreObject } from '@/sqliteStore';
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -17,6 +17,7 @@ const COLUMN_CONFIGS = [
     constructColumnConfig('boolean'),
     constructColumnConfig('temporal', 'date')
 ];
+const LARGE_COLUMN_CONFIGS = [constructColumnConfig('numeric', 'bigint'), constructColumnConfig('numeric', 'integer')];
 const RECORDS: StoreRecord[] = [
     ['North', 3, 1.5, true, new Date('2026-01-02')],
     ['South', 1, 2.5, false, new Date('2026-03-04')],
@@ -35,7 +36,6 @@ describe('sqliteStore', () => {
 
     beforeEach(async () => {
         database = new sqlite3.oo1.DB(':memory:');
-        ensureObjectsTable(database);
         await loadStoreObject(database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS.slice(0, 2), RECORDS.slice(2)]), new AbortController().signal);
     });
 
@@ -125,22 +125,15 @@ describe('sqliteStore', () => {
 describe('sqliteStore large number round trip', () => {
     it('returns a column of whole numbers beyond ±2^53 exactly as bigints, other whole numbers as numbers, in numeric order', async () => {
         const database = new sqlite3.oo1.DB(':memory:');
-        ensureObjectsTable(database);
         const records: StoreRecord[] = [
             [9_223_372_036_854_775_807n, 1],
             [-9_223_372_036_854_775_808n, 2],
             [9_007_199_254_740_993n, 3],
             [42n, 4]
         ];
-        await loadStoreObject(
-            database,
-            'large',
-            [constructColumnConfig('numeric', 'bigint'), constructColumnConfig('numeric', 'integer')],
-            yieldChunks([records]),
-            new AbortController().signal
-        );
+        await loadStoreObject(database, 'large', LARGE_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
 
-        const result = queryStoreObject(database, constructQuery({ path: 'large', sorts: [{ columnIndex: 0, directionId: 'ascending' }] }));
+        const result = queryStoreObject(database, constructQuery({ columnConfigs: LARGE_COLUMN_CONFIGS, path: 'large', sorts: [{ columnIndex: 0, directionId: 'ascending' }] }));
 
         expect(result.records).toEqual([
             [-9_223_372_036_854_775_808n, 2],
@@ -165,12 +158,11 @@ describe('sqliteStore temporal round trip', () => {
     }
 
     function query(options: Partial<QueryRecordsOptions>): StoreRecord[] {
-        return queryStoreObject(database, constructQuery({ path: 'dates', ...options })).records;
+        return queryStoreObject(database, constructQuery({ columnConfigs: TEMPORAL_COLUMN_CONFIGS, path: 'dates', ...options })).records;
     }
 
     beforeEach(() => {
         database = new sqlite3.oo1.DB(':memory:');
-        ensureObjectsTable(database);
     });
 
     it('returns every date, time and date-time exactly as loaded, across the whole calendar and day', async () => {
@@ -228,17 +220,6 @@ describe('sqliteStore temporal round trip', () => {
             })
         ).toEqual([[new Date(1000), new Date(19_785 * DAY), new Date(19_785 * DAY)]]);
     });
-
-    it('still reads a date column loaded before dates were stored as day numbers', async () => {
-        await load([constructTemporalRecord(19_786, 0)]);
-        database.exec({ sql: 'UPDATE dates SET c0 = ?', bind: [19_786 * DAY] });
-        database.exec({
-            sql: "UPDATE _dpuse_objects SET columns = ? WHERE path = 'dates'",
-            bind: [JSON.stringify(TEMPORAL_COLUMN_CONFIGS.map(({ dataSubtypeId, dataTypeId }) => ({ dataSubtypeId, dataTypeId })))]
-        });
-
-        expect(query({})[0]?.[0]).toEqual(new Date(19_786 * DAY));
-    });
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -248,7 +229,7 @@ function constructColumnConfig(dataTypeId: DataTypeId, dataSubtypeId?: DataSubty
 }
 
 function constructQuery(options: Partial<QueryRecordsOptions>): QueryRecordsOptions {
-    return { aggregates: [], filters: [], groupColumnIndexes: [], limit: 100, offset: 0, path: 'sales', sorts: [], ...options };
+    return { aggregates: [], columnConfigs: COLUMN_CONFIGS, filters: [], groupColumnIndexes: [], limit: 100, offset: 0, path: 'sales', sorts: [], ...options };
 }
 
 // A stream stands in for the engine's queue of chunks, as both are read with 'for await'.

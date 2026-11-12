@@ -17,17 +17,14 @@ import type {
 
 // ── Types ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// What the store keeps about each loaded object, to turn stored values back into their audited types.
+// How a column's values are stored, worked out from its type, to turn stored values back into that type.
 interface StoredColumn {
     dataSubtypeId: DataSubtypeId | undefined;
     dataTypeId: DataTypeId;
-    isDayNumber: boolean | undefined; // Set for a column of dates, each stored as a count of days. A column loaded before this holds milliseconds.
+    isDayNumber: boolean; // Set for a column of dates, each stored as a count of days.
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-// Holds each object's audited column types. Named so it cannot clash with a data view's table, whose name is its path.
-const OBJECTS_TABLE = '_dpuse_objects';
 
 const LIKE_ESCAPE_SQL = String.raw`ESCAPE '\'`; // Lets a filter match '%' and '_' as written, not as wildcards.
 
@@ -35,19 +32,12 @@ const MILLISECONDS_PER_DAY = 86_400_000;
 
 // ── Actions ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-export function ensureObjectsTable(database: Database): void {
-    database.exec(`CREATE TABLE IF NOT EXISTS ${OBJECTS_TABLE} (path TEXT PRIMARY KEY, columns TEXT NOT NULL)`);
-}
-
 export function dropStoreObject(database: Database, path: string): void {
-    database.transaction(() => {
-        database.exec(`DROP TABLE IF EXISTS ${quoteIdentifier(path)}`);
-        database.exec({ sql: `DELETE FROM ${OBJECTS_TABLE} WHERE path = ?`, bind: [path] });
-    });
+    database.exec(`DROP TABLE IF EXISTS ${quoteIdentifier(path)}`);
 }
 
 // Replaces an object with the records given, in one transaction, so a failed or stopped load leaves the earlier one in
-// place. 'signal' is checked between chunks.
+// place. 'signal' is checked between chunks. The columns' types are not kept, because every query brings them.
 export async function loadStoreObject(
     database: Database,
     path: string,
@@ -55,11 +45,7 @@ export async function loadStoreObject(
     chunks: AsyncIterable<StoreRecord[]>,
     signal: AbortSignal
 ): Promise<number> {
-    const storedColumns: StoredColumn[] = columnConfigs.map(({ dataSubtypeId, dataTypeId }) => ({
-        dataSubtypeId,
-        dataTypeId,
-        isDayNumber: dataTypeId === 'temporal' && dataSubtypeId === 'date'
-    }));
+    const storedColumns = constructStoredColumns(columnConfigs);
     const columnDefinitions = storedColumns.map((storedColumn, columnIndex) => `${columnName(columnIndex)} ${resolveColumnType(storedColumn)}`);
     const tableName = quoteIdentifier(path);
     let recordCount = 0;
@@ -68,7 +54,6 @@ export async function loadStoreObject(
     try {
         database.exec(`DROP TABLE IF EXISTS ${tableName}`);
         database.exec(`CREATE TABLE ${tableName} (${columnDefinitions.join(', ')})`);
-        database.exec({ sql: `INSERT OR REPLACE INTO ${OBJECTS_TABLE} (path, columns) VALUES (?, ?)`, bind: [path, JSON.stringify(storedColumns)] });
         if (storedColumns.length > 0) {
             const statement = database.prepare(`INSERT INTO ${tableName} VALUES (${storedColumns.map(() => '?').join(', ')})`);
             try {
@@ -91,8 +76,10 @@ export async function loadStoreObject(
     }
 }
 
+// The query brings the columns the object was loaded with, so each stored value is read back as its column's type.
 export function queryStoreObject(database: Database, options: QueryRecordsOptions): QueryRecordsResult {
-    const storedColumns = retrieveStoredColumns(database, options.path);
+    if (database.selectValue("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", [options.path]) == null) throw new Error(`'${options.path}' has not been loaded.`);
+    const storedColumns = constructStoredColumns(options.columnConfigs);
     const isGrouped = options.groupColumnIndexes.length > 0;
     const resultColumns = isGrouped ? constructGroupedResultColumns(storedColumns, options) : storedColumns.map((storedColumn, columnIndex) => ({ columnIndex, storedColumn }));
     const selections = isGrouped
@@ -212,7 +199,7 @@ function escapeLikeText(text: string): string {
 function fromStoredValue(value: unknown, storedColumn: StoredColumn | undefined): StoreValue {
     if (value == null) return null;
     if (storedColumn?.dataTypeId === 'boolean') return value === 1 || value === 1n;
-    if (storedColumn?.dataTypeId === 'temporal') return new Date(Number(value) * (storedColumn.isDayNumber === true ? MILLISECONDS_PER_DAY : 1));
+    if (storedColumn?.dataTypeId === 'temporal') return new Date(Number(value) * (storedColumn.isDayNumber ? MILLISECONDS_PER_DAY : 1));
     if (typeof value === 'number' && storedColumn?.dataSubtypeId === 'bigint') return BigInt(value);
     return typeof value === 'bigint' || typeof value === 'number' || typeof value === 'string' ? value : null;
 }
@@ -236,10 +223,8 @@ function resolveColumnType(storedColumn: StoredColumn): string {
     }
 }
 
-function retrieveStoredColumns(database: Database, path: string): StoredColumn[] {
-    const columnsJSON = database.selectValue(`SELECT columns FROM ${OBJECTS_TABLE} WHERE path = ?`, [path]);
-    if (columnsJSON == null) throw new Error(`'${path}' has not been loaded.`);
-    return JSON.parse(columnsJSON as string) as StoredColumn[];
+function constructStoredColumns(columnConfigs: ObjectColumnConfig[]): StoredColumn[] {
+    return columnConfigs.map(({ dataSubtypeId, dataTypeId }) => ({ dataSubtypeId, dataTypeId, isDayNumber: dataTypeId === 'temporal' && dataSubtypeId === 'date' }));
 }
 
 // eslint-disable-next-line sonarjs/function-return-type -- A bound value is one of several types, by its column.
