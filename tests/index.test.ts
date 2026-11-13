@@ -120,8 +120,31 @@ describe('Connector', () => {
             await expect(connector.listNodes({ folderPath: '/sales/returns' })).rejects.toThrow("Encountered invalid folder path '/sales/returns'.");
         });
 
-        it('refuses to list until the store is open', async () => {
-            await expect(new Connector({} as never, []).listNodes({ folderPath: '' })).rejects.toThrow('The store is not open.');
+        it('opens a closed store before listing it', async () => {
+            const connector = constructListingConnector({ '/default.sqlite3': ['orders'] });
+            const { databases, poolUtility } = connector;
+            connector.databases = new Map();
+            connector.poolUtility = undefined;
+            const openStore = vi.spyOn(connector, 'openStore').mockImplementation(() => {
+                connector.databases = databases;
+                connector.poolUtility = poolUtility;
+                return Promise.resolve({ storeStateId: 'ready' });
+            });
+
+            const result = await connector.listNodes({ folderPath: '/default' });
+
+            expect(openStore).toHaveBeenCalledOnce();
+            expect(result.connectionNodeConfigs).toEqual([expect.objectContaining({ id: '/default/orders' })]);
+        });
+
+        it.each([
+            { message: 'The store is open in another tab.', storeStateId: 'heldElsewhere' as const },
+            { message: 'This browser gives no storage to keep the store in, as in some private windows.', storeStateId: 'unavailable' as const }
+        ])('refuses to list when the store cannot be opened because it is $storeStateId', async ({ message, storeStateId }) => {
+            const connector = new Connector({} as never, []);
+            vi.spyOn(connector, 'openStore').mockResolvedValue({ storeStateId });
+
+            await expect(connector.listNodes({ folderPath: '' })).rejects.toThrow(message);
         });
     });
 });

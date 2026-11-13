@@ -1,5 +1,5 @@
 {
-  "version": "1.0.119",
+  "version": "1.0.120",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
