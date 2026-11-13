@@ -76,6 +76,24 @@ describe('Connector', () => {
         await expect(new Connector({} as never, []).closeStore()).resolves.toBeUndefined();
     });
 
+    it('waits for a close still releasing the lock before opening, so the lock is free', async () => {
+        const connector = new Connector({} as never, []);
+        const release = Promise.withResolvers<undefined>();
+        connector.releaseLock = () => release.promise;
+        const startStore = vi.fn(() => Promise.resolve({ storeStateId: 'ready' as const }));
+        Object.assign(connector, { startStore });
+
+        const closing = connector.closeStore();
+        const opening = connector.openStore();
+        await Promise.resolve();
+        expect(startStore).not.toHaveBeenCalled();
+        release.resolve(undefined);
+
+        await expect(opening).resolves.toEqual({ storeStateId: 'ready' });
+        await closing;
+        expect(startStore).toHaveBeenCalledOnce();
+    });
+
     it('opens the store once for requests that arrive together', async () => {
         const connector = new Connector({} as never, []);
         const startStore = vi.fn(() => Promise.resolve({ storeStateId: 'ready' as const }));

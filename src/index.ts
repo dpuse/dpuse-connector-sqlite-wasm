@@ -69,14 +69,16 @@ export class Connector implements ConnectorInterface {
     private readonly connectorUtilities: ConnectorUtilities;
     private readonly toolConfigs;
     databases: Map<string, OpfsSAHPoolDatabase>; // By database name.
+    pendingCloseStore: Promise<void> | undefined;
     pendingOpenStore: Promise<OpenStoreResult> | undefined;
     pendingSqlite: Promise<Sqlite3Static> | undefined;
     poolUtility: SAHPoolUtil | undefined;
-    releaseLock: (() => void) | undefined;
+    releaseLock: (() => Promise<void>) | undefined;
 
     constructor(connectorUtilities: ConnectorUtilities, toolConfigs: ToolConfig[]) {
         this.connectorUtilities = connectorUtilities;
         this.databases = new Map();
+        this.pendingCloseStore = undefined;
         this.pendingOpenStore = undefined;
         this.pendingSqlite = undefined;
         this.poolUtility = undefined;
@@ -118,17 +120,15 @@ export class Connector implements ConnectorInterface {
     }
 
     // The pool keeps its files open until it is paused, which would stop another tab opening the store after this one
-    // has closed it.
-    closeStore(): Promise<void> {
+    // has closed it. An open that arrives while a close is still releasing the lock, such as when a screen closes the
+    // store and the next one opens it, waits for the close, so it does not find the lock still held.
+    async closeStore(): Promise<void> {
+        const pendingCloseStore = this.endStore();
+        this.pendingCloseStore = pendingCloseStore;
         try {
-            for (const database of this.databases.values()) database.close();
-            this.databases.clear();
-            if (this.poolUtility?.isPaused() === false) this.poolUtility.pauseVfs();
-            return Promise.resolve();
-        } catch (error) {
-            return Promise.reject(normalizeToError(error));
+            await pendingCloseStore;
         } finally {
-            this.releaseHeldLock();
+            if (this.pendingCloseStore === pendingCloseStore) this.pendingCloseStore = undefined;
         }
     }
 
@@ -177,6 +177,11 @@ export class Connector implements ConnectorInterface {
     // first and report the store as open in another tab.
     async openStore(): Promise<OpenStoreResult> {
         if (this.databases.size > 0) return { storeStateId: 'ready' };
+        try {
+            await this.pendingCloseStore;
+        } catch {
+            // A close that failed has still released the lock.
+        }
         this.pendingOpenStore ??= this.startStore();
         try {
             return await this.pendingOpenStore;
@@ -244,6 +249,18 @@ export class Connector implements ConnectorInterface {
         const { databaseName = DEFAULT_DATABASE_NAME, tableName } = resolveStorePath(path);
         if (!this.databases.has(databaseName) && poolUtility.getCapacity() - poolUtility.getFileCount() < FILES_PER_DATABASE) await poolUtility.addCapacity(FILES_PER_DATABASE);
         return { database: this.openDatabase(databaseName), tableName };
+    }
+
+    private async endStore(): Promise<void> {
+        try {
+            for (const database of this.databases.values()) database.close();
+            this.databases.clear();
+            if (this.poolUtility?.isPaused() === false) this.poolUtility.pauseVfs();
+        } catch (error) {
+            throw normalizeToError(error);
+        } finally {
+            await this.releaseHeldLock();
+        }
     }
 
     // Throws when there is no such table.
@@ -335,9 +352,11 @@ export class Connector implements ConnectorInterface {
         if (storeStateId === 'unavailable') throw new Error('This browser gives no storage to keep the store in, as in some private windows.');
     }
 
-    private releaseHeldLock(): void {
-        this.releaseLock?.();
+    // Resolves once the lock is free for the next open.
+    private async releaseHeldLock(): Promise<void> {
+        const releaseLock = this.releaseLock;
         this.releaseLock = undefined;
+        await releaseLock?.();
     }
 
     // Waits for the lock, so the store is only ever opened by the tab that holds it.
@@ -349,14 +368,14 @@ export class Connector implements ConnectorInterface {
             const sqlite3 = await this.loadSqlite();
             const poolUtility = await this.establishPool(sqlite3);
             if (!poolUtility) {
-                this.releaseHeldLock();
+                await this.releaseHeldLock();
                 return { storeStateId: 'unavailable' };
             }
             const defaultDatabase = new poolUtility.OpfsSAHPoolDb(`/${DEFAULT_DATABASE_NAME}.sqlite3`);
             this.databases.set(DEFAULT_DATABASE_NAME, defaultDatabase);
             return { storeStateId: 'ready' };
         } catch (error) {
-            this.releaseHeldLock();
+            await this.releaseHeldLock();
             throw normalizeToError(error);
         }
     }
