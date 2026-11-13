@@ -36,6 +36,17 @@ export function dropStoreObject(database: Database, path: string): void {
     database.exec(`DROP TABLE IF EXISTS ${quoteIdentifier(path)}`);
 }
 
+export function countStoreObjectRecords(database: Database, tableName: string): number {
+    return Number(database.selectValue(`SELECT count(*) FROM ${quoteIdentifier(tableName)}`) ?? 0);
+}
+
+// A table's columns, from the type each was created with, so a table read on its own gives back the types it was loaded
+// with. A column is labelled with its name, because the store keeps no labels. Empty when there is no such table.
+export function describeStoreObject(database: Database, tableName: string): ObjectColumnConfig[] {
+    const columnRows = database.selectArrays('SELECT name, type FROM pragma_table_info(?)', [tableName]);
+    return columnRows.map(([name, typeName]) => ({ ...identifyColumnType(typeof typeName === 'string' ? typeName : ''), label: { en: typeof name === 'string' ? name : '' } }));
+}
+
 // SQLite keeps its own tables beside the store's, under names starting 'sqlite_', which no store object can take.
 export function listStoreObjectNames(database: Database): string[] {
     return database.selectValues(String.raw`SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\_%' ESCAPE '\' ORDER BY name`).map(String);
@@ -79,6 +90,27 @@ export async function loadStoreObject(
         database.exec('ROLLBACK');
         throw error;
     }
+}
+
+// Reads one chunk of a table's records in rowid order, each value as its column's type. A chunk starts after the last
+// rowid of the one before, so a chunk far into the table is found as quickly as the first. Each read finishes before
+// its records are used, so a load into the same database, which drops and creates tables, is never blocked by it.
+export function readStoreObjectRecords(
+    database: Database,
+    tableName: string,
+    columnConfigs: ObjectColumnConfig[],
+    chunkSize: number,
+    afterRowId: number | undefined
+): { lastRowId: number | undefined; records: StoreRecord[] } {
+    const storedColumns = constructStoredColumns(columnConfigs);
+    const whereSql = afterRowId == null ? '' : ' WHERE rowid > ?';
+    const values = afterRowId == null ? [chunkSize] : [afterRowId, chunkSize];
+    const rows = database.selectArrays(`SELECT rowid, * FROM ${quoteIdentifier(tableName)}${whereSql} ORDER BY rowid LIMIT ?`, values);
+    const lastRowId = rows.at(-1)?.[0];
+    return {
+        lastRowId: lastRowId == null ? undefined : Number(lastRowId),
+        records: rows.map(([, ...storedValues]) => storedValues.map((value, columnIndex) => fromStoredValue(value, storedColumns[columnIndex])))
+    };
 }
 
 // The query brings the columns the object was loaded with, so each stored value is read back as its column's type.
@@ -209,23 +241,61 @@ function fromStoredValue(value: unknown, storedColumn: StoredColumn | undefined)
     return typeof value === 'bigint' || typeof value === 'number' || typeof value === 'string' ? value : null;
 }
 
+// The opposite of 'resolveColumnType'. A column of any other type, from a table the store did not create, has no known
+// type, so its values are taken as SQLite gives them and their type is worked out from them.
+function identifyColumnType(typeName: string): Pick<ObjectColumnConfig, 'dataSubtypeId' | 'dataTypeId'> {
+    switch (typeName.toUpperCase()) {
+        case 'BIGINT':
+            return { dataSubtypeId: 'bigint', dataTypeId: 'numeric' };
+        case 'BOOLEAN':
+            return { dataSubtypeId: undefined, dataTypeId: 'boolean' };
+        case 'DATE':
+            return { dataSubtypeId: 'date', dataTypeId: 'temporal' };
+        case 'INTEGER':
+            return { dataSubtypeId: 'integer', dataTypeId: 'numeric' };
+        case 'REAL':
+            return { dataSubtypeId: 'decimal', dataTypeId: 'numeric' };
+        case 'TEXT':
+            return { dataSubtypeId: undefined, dataTypeId: 'string' };
+        case 'TIME':
+            return { dataSubtypeId: 'time', dataTypeId: 'temporal' };
+        case 'TIMESTAMP':
+            return { dataSubtypeId: 'dateTime', dataTypeId: 'temporal' };
+        default:
+            return { dataSubtypeId: undefined, dataTypeId: 'unknown' };
+    }
+}
+
 function quoteIdentifier(name: string): string {
     return `"${name.replaceAll('"', '""')}"`;
 }
 
+// SQLite stores a value by the kind of type a column names, not the name itself, so 'BOOLEAN', 'DATE', 'TIME' and
+// 'TIMESTAMP' store whole numbers just as 'INTEGER' does. The names say what each column holds, so
+// 'describeStoreObject' can give the types back.
 function resolveColumnType(storedColumn: StoredColumn): string {
     switch (storedColumn.dataTypeId) {
         case 'boolean':
-            return 'INTEGER';
+            return 'BOOLEAN';
         case 'numeric':
-            return storedColumn.dataSubtypeId === 'decimal' ? 'REAL' : 'INTEGER';
+            return resolveNumericColumnType(storedColumn);
         case 'temporal':
-            return 'INTEGER';
+            return resolveTemporalColumnType(storedColumn);
         case 'string':
             return 'TEXT';
         case 'unknown':
             return 'BLOB'; // Every value of a column with no audited type is null.
     }
+}
+
+function resolveNumericColumnType(storedColumn: StoredColumn): string {
+    if (storedColumn.dataSubtypeId === 'decimal') return 'REAL';
+    return storedColumn.dataSubtypeId === 'bigint' ? 'BIGINT' : 'INTEGER';
+}
+
+function resolveTemporalColumnType(storedColumn: StoredColumn): string {
+    if (storedColumn.dataSubtypeId === 'date') return 'DATE';
+    return storedColumn.dataSubtypeId === 'time' ? 'TIME' : 'TIMESTAMP';
 }
 
 function constructStoredColumns(columnConfigs: ObjectColumnConfig[]): StoredColumn[] {

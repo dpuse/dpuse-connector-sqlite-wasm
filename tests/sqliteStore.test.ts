@@ -6,7 +6,7 @@ import sqlite3InitModule, { type Database } from '@sqlite.org/sqlite-wasm';
 import type { DataSubtypeId, DataTypeId, ObjectColumnConfig, QueryRecordsOptions, StoreRecord } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
-import { dropStoreObject, loadStoreObject, queryStoreObject } from '@/sqliteStore';
+import { countStoreObjectRecords, describeStoreObject, dropStoreObject, loadStoreObject, queryStoreObject, readStoreObjectRecords } from '@/sqliteStore';
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -219,6 +219,50 @@ describe('sqliteStore temporal round trip', () => {
                 sorts: [{ columnIndex: 0, directionId: 'ascending' }]
             })
         ).toEqual([[new Date(1000), new Date(19_785 * DAY), new Date(19_785 * DAY)]]);
+    });
+});
+
+describe('sqliteStore source reading', () => {
+    let database: Database;
+
+    beforeEach(() => {
+        database = new sqlite3.oo1.DB(':memory:');
+    });
+
+    it('gives back the type each column was loaded as, so a table read on its own has its types', async () => {
+        const columnConfigs = [
+            constructColumnConfig('numeric', 'integer'),
+            constructColumnConfig('numeric', 'decimal'),
+            constructColumnConfig('numeric', 'bigint'),
+            constructColumnConfig('boolean'),
+            constructColumnConfig('temporal', 'date'),
+            constructColumnConfig('temporal', 'time'),
+            constructColumnConfig('temporal', 'dateTime'),
+            constructColumnConfig('string'),
+            constructColumnConfig('unknown')
+        ];
+        await loadStoreObject(database, 'everything', columnConfigs, yieldChunks([]), new AbortController().signal);
+
+        expect(describeStoreObject(database, 'everything')).toEqual(
+            columnConfigs.map(({ dataSubtypeId, dataTypeId }, columnIndex) => ({ dataSubtypeId, dataTypeId, label: { en: `c${String(columnIndex)}` } }))
+        );
+    });
+
+    it('describes no columns for a table that is not there', () => {
+        expect(describeStoreObject(database, 'missing')).toEqual([]);
+    });
+
+    it('reads every record typed, a chunk at a time in the order it was loaded, after a load into the same database', async () => {
+        await loadStoreObject(database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS]), new AbortController().signal);
+        const columnConfigs = describeStoreObject(database, 'sales');
+
+        const firstChunk = readStoreObjectRecords(database, 'sales', columnConfigs, 3, undefined);
+        const secondChunk = readStoreObjectRecords(database, 'sales', columnConfigs, 3, firstChunk.lastRowId);
+        await loadStoreObject(database, 'copy', columnConfigs, yieldChunks([firstChunk.records, secondChunk.records]), new AbortController().signal); // No read is left open to block it.
+
+        expect([...firstChunk.records, ...secondChunk.records]).toEqual(RECORDS);
+        expect(readStoreObjectRecords(database, 'sales', columnConfigs, 3, secondChunk.lastRowId)).toEqual({ lastRowId: undefined, records: [] });
+        expect(countStoreObjectRecords(database, 'copy')).toBe(RECORDS.length);
     });
 });
 
