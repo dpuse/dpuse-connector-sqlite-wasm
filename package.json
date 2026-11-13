@@ -1,6 +1,6 @@
 {
     "name": "@dpuse/dpuse-connector-sqlite-wasm",
-    "version": "1.0.119",
+    "version": "1.0.120",
     "private": false,
     "description": "Stores data views for investigation in a SQLite database saved in the browser (OPFS).",
     "license": "MIT",
@@ -61,7 +61,7 @@
         "test": "node -e \"import('@dpuse/dpuse-development').then(m => m.testProject())\""
     },
     "dependencies": {
-        "@dpuse/dpuse-shared": "^1.0.213",
+        "@dpuse/dpuse-shared": "^1.0.216",
         "@sqlite.org/sqlite-wasm": "3.54.1-build1"
     },
     "devDependencies": {
@@ -70,12 +70,12 @@
         "@types/node": "^26.6.6",
         "@vitest/coverage-v8": "^5.1.0",
         "eslint": "^10.14.0",
-        "prettier": "^3.9.10",
+        "prettier": "^3.10.1",
         "sonda": "^0.14.0",
         "typescript": "^6.0.3",
-        "vite": "^8.3.7",
+        "vite": "^8.3.8",
         "vite-plugin-dts": "^5.1.2",
         "vitest": "^5.1.0",
-        "wrangler": "^4.160.0"
+        "wrangler": "^4.161.0"
     }
 }

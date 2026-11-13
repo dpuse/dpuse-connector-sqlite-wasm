@@ -1,5 +1,5 @@
 {
-  "version": "1.0.118",
+  "version": "1.0.119",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
@@ -8,7 +8,7 @@
       "overridden": false,
       "dependencies": {
         "@dpuse/dpuse-shared": {
-          "version": "1.0.213"
+          "version": "1.0.216"
         },
         "license-checker-rseidelsohn": {
           "version": "5.0.1",
@@ -1194,8 +1194,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.213",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.213.tgz",
+      "version": "1.0.216",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.216.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -3296,8 +3296,8 @@
       }
     },
     "prettier": {
-      "version": "3.9.10",
-      "resolved": "https://registry.npmjs.org/prettier/-/prettier-3.9.10.tgz",
+      "version": "3.10.1",
+      "resolved": "https://registry.npmjs.org/prettier/-/prettier-3.10.1.tgz",
       "overridden": false
     },
     "sonda": {
@@ -3531,19 +3531,19 @@
               }
             },
             "vite": {
-              "version": "8.3.7"
+              "version": "8.3.8"
             },
             "webpack": {}
           }
         },
         "vite": {
-          "version": "8.3.7"
+          "version": "8.3.8"
         }
       }
     },
     "vite": {
-      "version": "8.3.7",
-      "resolved": "https://registry.npmjs.org/vite/-/vite-8.3.7.tgz",
+      "version": "8.3.8",
+      "resolved": "https://registry.npmjs.org/vite/-/vite-8.3.8.tgz",
       "overridden": false,
       "dependencies": {
         "@types/node": {
@@ -3784,7 +3784,7 @@
             },
             "msw": {},
             "vite": {
-              "version": "8.3.7"
+              "version": "8.3.8"
             }
           }
         },
@@ -3841,7 +3841,7 @@
           "version": "0.2.17"
         },
         "vite": {
-          "version": "8.3.7"
+          "version": "8.3.8"
         },
         "why-is-node-running": {
           "version": "3.2.1",
@@ -3851,8 +3851,8 @@
       }
     },
     "wrangler": {
-      "version": "4.160.0",
-      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.160.0.tgz",
+      "version": "4.161.0",
+      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.161.0.tgz",
       "overridden": false,
       "dependencies": {
         "@cloudflare/kv-asset-handler": {
@@ -3906,8 +3906,8 @@
           "version": "2.3.3"
         },
         "miniflare": {
-          "version": "5.20261110.0-beta",
-          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261110.0-beta.tgz",
+          "version": "5.20261110.2-beta",
+          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261110.2-beta.tgz",
           "overridden": false,
           "dependencies": {
             "@cspotcode/source-map-support": {

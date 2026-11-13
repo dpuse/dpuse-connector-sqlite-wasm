@@ -5,9 +5,12 @@ import type { OpfsSAHPoolDatabase, SAHPoolUtil, Sqlite3Static } from '@sqlite.or
 // ── DPUse Framework
 import { acquireWebLock, normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
 import type {
+    ConnectionNodeConfig,
     ConnectorInterface,
     ConnectorUtilities,
     DropObjectOptions,
+    ListNodesOptions,
+    ListNodesResult,
     LoadObjectRecordsOptions,
     LoadObjectRecordsResult,
     OpenStoreResult,
@@ -18,11 +21,12 @@ import type {
 } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
-import { dropStoreObject, loadStoreObject, queryStoreObject } from '@/sqliteStore';
+import { dropStoreObject, listStoreObjectNames, loadStoreObject, queryStoreObject } from '@/sqliteStore';
 
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-const DEFAULT_DATABASE_PATH = '/dpuse-store.sqlite3'; // Used by a path that names no database.
+const DATABASE_FILE_PATTERN = /^\/([\w-]+)\.sqlite3$/u; // A database's file in the pool. Its journal, '….sqlite3-journal', does not match.
+const DEFAULT_DATABASE_NAME = 'default'; // Used by a path that names no database, so 'orders' and '/default/orders' are the same table.
 const FILES_PER_DATABASE = 2; // The database file, and the journal written beside it while a change is saved.
 const LOCK_NAME = 'dpuse-connector-sqlite-wasm'; // Held by the one tab that has the store open.
 const POOL_NAME = 'dpuse-connector-sqlite-wasm';
@@ -38,7 +42,7 @@ const initialiseSqliteModule = sqlite3InitModule as (moduleArgument: { locateFil
 export class Connector implements ConnectorInterface {
     private readonly connectorUtilities: ConnectorUtilities;
     private readonly toolConfigs;
-    databases: Map<string, OpfsSAHPoolDatabase>; // By database name. The default database's name is ''.
+    databases: Map<string, OpfsSAHPoolDatabase>; // By database name.
     pendingSqlite: Promise<Sqlite3Static> | undefined;
     poolUtility: SAHPoolUtil | undefined;
     releaseLock: (() => void) | undefined;
@@ -78,6 +82,17 @@ export class Connector implements ConnectorInterface {
         }
     }
 
+    // Each database is a folder at the top, holding its tables. A database is found from its file in the pool, so one not
+    // used since the store opened is listed too.
+    listNodes(options: ListNodesOptions): Promise<ListNodesResult> {
+        try {
+            const connectionNodeConfigs = options.folderPath === '' ? this.listTopNodes() : this.listDatabaseNodes(options.folderPath);
+            return Promise.resolve({ cursor: undefined, connectionNodeConfigs, isMore: false, totalCount: connectionNodeConfigs.length });
+        } catch (error) {
+            return Promise.reject(normalizeToError(error));
+        }
+    }
+
     async loadObjectRecords(options: LoadObjectRecordsOptions, chunks: AsyncIterable<StoreRecord[]>): Promise<LoadObjectRecordsResult> {
         try {
             const { database, tableName } = await this.establishDatabase(options.path);
@@ -100,8 +115,8 @@ export class Connector implements ConnectorInterface {
                 this.releaseHeldLock();
                 return { storeStateId: 'unavailable' };
             }
-            const defaultDatabase = new poolUtility.OpfsSAHPoolDb(DEFAULT_DATABASE_PATH);
-            this.databases.set('', defaultDatabase);
+            const defaultDatabase = new poolUtility.OpfsSAHPoolDb(`/${DEFAULT_DATABASE_NAME}.sqlite3`);
+            this.databases.set(DEFAULT_DATABASE_NAME, defaultDatabase);
             return { storeStateId: 'ready' };
         } catch (error) {
             this.releaseHeldLock();
@@ -123,16 +138,15 @@ export class Connector implements ConnectorInterface {
     // Opens a named database on first use. The pool holds a set number of files, so it is grown first when it has too
     // few free for another database.
     private async establishDatabase(path: string): Promise<{ database: OpfsSAHPoolDatabase; tableName: string }> {
-        const poolUtility = this.poolUtility;
-        if (poolUtility == null || this.databases.size === 0) throw new Error('The store is not open.');
-        const { databaseName = '', tableName } = resolveStorePath(path);
-        let database = this.databases.get(databaseName);
-        if (database == null) {
-            if (poolUtility.getCapacity() - poolUtility.getFileCount() < FILES_PER_DATABASE) await poolUtility.addCapacity(FILES_PER_DATABASE);
-            database = new poolUtility.OpfsSAHPoolDb(`/${databaseName}.sqlite3`);
-            this.databases.set(databaseName, database);
-        }
-        return { database, tableName };
+        const poolUtility = this.establishOpenPool();
+        const { databaseName = DEFAULT_DATABASE_NAME, tableName } = resolveStorePath(path);
+        if (!this.databases.has(databaseName) && poolUtility.getCapacity() - poolUtility.getFileCount() < FILES_PER_DATABASE) await poolUtility.addCapacity(FILES_PER_DATABASE);
+        return { database: this.openDatabase(databaseName), tableName };
+    }
+
+    private establishOpenPool(): SAHPoolUtil {
+        if (this.poolUtility == null || this.databases.size === 0) throw new Error('The store is not open.');
+        return this.poolUtility;
     }
 
     // Returns nothing when the browser gives no private file system, e.g. in some private windows.
@@ -162,8 +176,80 @@ export class Connector implements ConnectorInterface {
         }
     }
 
+    // A folder path names one database, as '/database'. Listing never creates a database, so one with no file is refused.
+    private listDatabaseNodes(folderPath: string): ConnectionNodeConfig[] {
+        const databaseName = /^\/([\w-]+)$/u.exec(folderPath)?.[1];
+        if (databaseName == null) throw new Error(`Encountered invalid folder path '${folderPath}'.`);
+        if (!this.listDatabaseNames().includes(databaseName)) throw new Error(`Database '${databaseName}' does not exist.`);
+        const database = this.openDatabase(databaseName);
+        return listStoreObjectNames(database).map((tableName) => constructObjectNodeConfig(folderPath, tableName, `${folderPath}/${tableName}`));
+    }
+
+    private listDatabaseNames(): string[] {
+        return this.establishOpenPool()
+            .getFileNames()
+            .map((fileName) => DATABASE_FILE_PATTERN.exec(fileName)?.[1])
+            .filter((databaseName): databaseName is string => databaseName != null)
+            .toSorted((left, right) => left.localeCompare(right));
+    }
+
+    private listTopNodes(): ConnectionNodeConfig[] {
+        return this.listDatabaseNames().map((databaseName) => constructFolderNodeConfig(databaseName, listStoreObjectNames(this.openDatabase(databaseName)).length));
+    }
+
+    // Opens a database on first use. The default database is opened with the store.
+    private openDatabase(databaseName: string): OpfsSAHPoolDatabase {
+        const poolUtility = this.establishOpenPool();
+        let database = this.databases.get(databaseName);
+        if (database == null) {
+            database = new poolUtility.OpfsSAHPoolDb(`/${databaseName}.sqlite3`);
+            this.databases.set(databaseName, database);
+        }
+        return database;
+    }
+
     private releaseHeldLock(): void {
         this.releaseLock?.();
         this.releaseLock = undefined;
     }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// A database's folder is named and identified by the database's name, which a path to one of its tables starts with.
+function constructFolderNodeConfig(databaseName: string, childCount: number): ConnectionNodeConfig {
+    return {
+        childCount,
+        description: '',
+        extension: undefined,
+        folderPath: '',
+        icon: null,
+        iconDark: null,
+        id: databaseName,
+        label: databaseName,
+        lastModifiedAt: undefined,
+        mimeType: undefined,
+        name: databaseName,
+        size: undefined,
+        typeId: 'folder'
+    };
+}
+
+// A table is identified by its path, as the other actions take it.
+function constructObjectNodeConfig(folderPath: string, tableName: string, path: string): ConnectionNodeConfig {
+    return {
+        childCount: undefined,
+        description: '',
+        extension: undefined,
+        folderPath,
+        icon: null,
+        iconDark: null,
+        id: path,
+        label: tableName,
+        lastModifiedAt: undefined,
+        mimeType: undefined,
+        name: tableName,
+        size: undefined,
+        typeId: 'object'
+    };
 }

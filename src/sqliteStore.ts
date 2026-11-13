@@ -36,6 +36,11 @@ export function dropStoreObject(database: Database, path: string): void {
     database.exec(`DROP TABLE IF EXISTS ${quoteIdentifier(path)}`);
 }
 
+// SQLite keeps its own tables beside the store's, under names starting 'sqlite_', which no store object can take.
+export function listStoreObjectNames(database: Database): string[] {
+    return database.selectValues(String.raw`SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\_%' ESCAPE '\' ORDER BY name`).map(String);
+}
+
 // Replaces an object with the records given, in one transaction, so a failed or stopped load leaves the earlier one in
 // place. 'signal' is checked between chunks. The columns' types are not kept, because every query brings them.
 export async function loadStoreObject(
