@@ -21,6 +21,7 @@ import type {
     LoadObjectRecordsOptions,
     LoadObjectRecordsResult,
     ObjectColumnConfig,
+    OpenStoreOptions,
     OpenStoreResult,
     PreviewObjectOptions,
     PreviewObjectResult,
@@ -56,6 +57,8 @@ const FILES_PER_DATABASE = 2; // The database file, and the journal written besi
 const LOCK_NAME = 'dpuse-connector-sqlite-wasm'; // Held by the one tab that has the store open.
 const POOL_NAME = 'dpuse-connector-sqlite-wasm';
 const PREVIEW_RECORD_COUNT = 50;
+const START_ATTEMPT_COUNT = 10; // Starts tried while a tab that has just given up the store still holds its files.
+const START_RETRY_DELAY_MS = 200;
 
 // The package's own types declare no options, but its loader accepts Emscripten's 'locateFile'.
 const initialiseSqliteModule = sqlite3InitModule as (moduleArgument: { locateFile: (path: string) => string }) => Promise<Sqlite3Static>;
@@ -175,14 +178,14 @@ export class Connector implements ConnectorInterface {
 
     // Requests that arrive while the store is opening share the one open. A second open would find the lock taken by the
     // first and report the store as open in another tab.
-    async openStore(): Promise<OpenStoreResult> {
+    async openStore(options: OpenStoreOptions = {}): Promise<OpenStoreResult> {
         if (this.databases.size > 0) return { storeStateId: 'ready' };
         try {
             await this.pendingCloseStore;
         } catch {
             // A close that failed has still released the lock.
         }
-        this.pendingOpenStore ??= this.startStore();
+        this.pendingOpenStore ??= this.startStore(options.takeOver === true);
         try {
             return await this.pendingOpenStore;
         } finally {
@@ -285,14 +288,27 @@ export class Connector implements ConnectorInterface {
         return columnConfigs.length === 0 ? undefined : { columnConfigs, database, tableName };
     }
 
-    // Returns nothing when the browser gives no private file system, e.g. in some private windows.
+    // Returns nothing when the browser gives no private file system, e.g. in some private windows. A tab that has just
+    // given up the store, because this one took it over, can hold the pool's files for a moment, so a start that finds
+    // them held is tried again. By default SQLite deletes the pool's folder when a start fails, which would delete every
+    // database, so the pool is kept. SQLite's types do not list 'forceReinitIfPreviouslyFailed', which lets a failed
+    // start be tried again rather than repeat the failure.
     private async establishPool(sqlite3: Sqlite3Static): Promise<SAHPoolUtil | undefined> {
-        try {
-            if (this.poolUtility) return this.poolUtility.isPaused() ? await this.poolUtility.unpauseVfs() : this.poolUtility;
-            this.poolUtility = await sqlite3.installOpfsSAHPoolVfs({ name: POOL_NAME });
-            return this.poolUtility;
-        } catch {
-            return undefined;
+        const poolOptions = { forceReinitIfPreviouslyFailed: true, name: POOL_NAME, preserveOnInitFailure: true };
+        for (let attemptNumber = 1; ; attemptNumber++) {
+            try {
+                if (this.poolUtility) return this.poolUtility.isPaused() ? await this.poolUtility.unpauseVfs() : this.poolUtility;
+                this.poolUtility = await sqlite3.installOpfsSAHPoolVfs(poolOptions);
+                return this.poolUtility;
+            } catch (error) {
+                if (!isFileHeldError(error)) return undefined;
+                if (attemptNumber >= START_ATTEMPT_COUNT) {
+                    throw new Error('The store is still held by another tab or window. Close it there, or restart the browser.', { cause: error });
+                }
+                await new Promise((resolve) => {
+                    setTimeout(resolve, START_RETRY_DELAY_MS);
+                });
+            }
         }
     }
 
@@ -352,6 +368,15 @@ export class Connector implements ConnectorInterface {
         if (storeStateId === 'unavailable') throw new Error('This browser gives no storage to keep the store in, as in some private windows.');
     }
 
+    // Nothing waits on this close, so a failure is not thrown. The next open reports any problem with the files.
+    private async closeStoreAfterTakeover(): Promise<void> {
+        try {
+            await this.closeStore();
+        } catch {
+            // Already closed as far as it can be.
+        }
+    }
+
     // Resolves once the lock is free for the next open.
     private async releaseHeldLock(): Promise<void> {
         const releaseLock = this.releaseLock;
@@ -359,9 +384,13 @@ export class Connector implements ConnectorInterface {
         await releaseLock?.();
     }
 
-    // Waits for the lock, so the store is only ever opened by the tab that holds it.
-    private async startStore(): Promise<OpenStoreResult> {
-        const releaseLock = await acquireWebLock(LOCK_NAME); // Held until the store closes.
+    // Waits for the lock, so the store is only ever opened by the tab that holds it. When another tab takes the lock over,
+    // this tab closes the store, which finishes any write and frees the files for that tab to open.
+    private async startStore(shouldTakeOver: boolean): Promise<OpenStoreResult> {
+        const onLost = (): void => {
+            void this.closeStoreAfterTakeover();
+        };
+        const releaseLock = await acquireWebLock(LOCK_NAME, { onLost, takeOver: shouldTakeOver }); // Held until the store closes.
         if (releaseLock == null) return { storeStateId: 'heldElsewhere' };
         this.releaseLock = releaseLock;
         try {
@@ -382,6 +411,11 @@ export class Connector implements ConnectorInterface {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// The browser refuses a file another tab or worker still has open.
+function isFileHeldError(error: unknown): boolean {
+    return error instanceof Error && (error.name === 'NoModificationAllowedError' || error.message.includes('Access Handles cannot be created'));
+}
 
 // A table has no bytes, lines or comments, so only its records are counted.
 function constructContentAuditConfig(asAt: number, startedAt: number, columnConfigs: ColumnAuditConfig[], recordCount: number, isComplete: boolean): ContentAuditConfig {

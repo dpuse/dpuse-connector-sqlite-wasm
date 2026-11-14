@@ -94,6 +94,47 @@ describe('Connector', () => {
         expect(startStore).toHaveBeenCalledOnce();
     });
 
+    describe('another tab', () => {
+        it('takes the store over from the tab holding it, which closes its store to free the files', async () => {
+            const { connector: holdingConnector, pool: holdingPool } = constructOpeningConnector();
+            const { connector: takingConnector } = constructOpeningConnector();
+            await expect(holdingConnector.openStore()).resolves.toEqual({ storeStateId: 'ready' });
+
+            await expect(takingConnector.openStore()).resolves.toEqual({ storeStateId: 'heldElsewhere' });
+            await expect(takingConnector.openStore({ takeOver: true })).resolves.toEqual({ storeStateId: 'ready' });
+
+            await vi.waitFor(() => {
+                expect(holdingConnector.databases.size).toBe(0);
+            });
+            expect(holdingPool.pauseVfs).toHaveBeenCalledOnce(); // Pausing closes the pool's files.
+            await takingConnector.closeStore();
+        });
+
+        it('waits for files the other tab still holds, and keeps the pool if a start fails', async () => {
+            const { connector, sqlite } = constructOpeningConnector();
+            sqlite.installOpfsSAHPoolVfs.mockRejectedValueOnce(constructFileHeldError()).mockRejectedValueOnce(constructFileHeldError());
+
+            await expect(connector.openStore()).resolves.toEqual({ storeStateId: 'ready' });
+
+            expect(sqlite.installOpfsSAHPoolVfs).toHaveBeenCalledTimes(3);
+            expect(sqlite.installOpfsSAHPoolVfs).toHaveBeenCalledWith(expect.objectContaining({ forceReinitIfPreviouslyFailed: true, preserveOnInitFailure: true }));
+            await connector.closeStore();
+        });
+
+        it('fails with a clear message when the files stay held', async () => {
+            vi.useFakeTimers();
+            const { connector, sqlite } = constructOpeningConnector();
+            sqlite.installOpfsSAHPoolVfs.mockRejectedValue(constructFileHeldError());
+
+            const opening = connector.openStore();
+            const failure = expect(opening).rejects.toThrow('The store is still held by another tab or window. Close it there, or restart the browser.');
+            await vi.runAllTimersAsync();
+
+            await failure;
+            vi.useRealTimers();
+        });
+    });
+
     it('opens the store once for requests that arrive together', async () => {
         const connector = new Connector({} as never, []);
         const startStore = vi.fn(() => Promise.resolve({ storeStateId: 'ready' as const }));
@@ -326,6 +367,31 @@ function constructListingConnector(tableNamesByFilePath: Record<string, string[]
     connector.poolUtility = poolUtility as never;
     connector.databases.set('default', databasesByFilePath.get('/default.sqlite3') as never);
     return connector;
+}
+
+// A connector whose SQLite stands in for one with a private file system, so the store can be opened and closed in Node.
+// The lock is Node's own, which the tabs share as browser tabs do.
+function constructOpeningConnector(): {
+    connector: Connector;
+    pool: { isPaused: () => boolean; OpfsSAHPoolDb: () => { close: () => void }; pauseVfs: ReturnType<typeof vi.fn> };
+    sqlite: { installOpfsSAHPoolVfs: ReturnType<typeof vi.fn> };
+} {
+    const pool = {
+        isPaused: (): boolean => false,
+        OpfsSAHPoolDb: function () {
+            return { close: vi.fn() };
+        },
+        pauseVfs: vi.fn()
+    };
+    const sqlite = { installOpfsSAHPoolVfs: vi.fn(() => Promise.resolve(pool)) };
+    const connector = new Connector({} as never, []);
+    Object.assign(connector, { loadSqlite: () => Promise.resolve(sqlite) });
+    return { connector, pool, sqlite };
+}
+
+// The error a browser gives for a file another tab or worker still has open.
+function constructFileHeldError(): Error {
+    return new DOMException('Access Handles cannot be created if there is another open Access Handle.', 'NoModificationAllowedError');
 }
 
 async function* yieldChunks(chunks: StoreRecord[][]): AsyncGenerator<StoreRecord[]> {
