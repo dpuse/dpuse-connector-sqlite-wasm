@@ -3,6 +3,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import { describe, expect, it, vi } from 'vitest';
 
 // ── DPUse Framework
+import { findStoreErrorId } from '@dpuse/dpuse-shared';
 import type { ConnectorUtilities, StoreRecord } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
@@ -12,6 +13,7 @@ import { Connector } from '@/index';
 
 const DAY = 86_400_000;
 const PREVIEW_OPTIONS = { chunkSize: undefined, dataFormatId: undefined, encodingId: undefined, extension: undefined, mimeType: undefined, parserId: undefined, valueDelimiterId: undefined };
+const QUERY_OPTIONS = { aggregates: [], columnConfigs: [], filters: [], groupColumnIndexes: [], limit: 1, offset: 0, path: 'sales', sorts: [] };
 const READ_OPTIONS = { chunkSize: 2, dataFormatId: 'unknown' as const, encodingId: undefined, parserId: undefined, valueDelimiterId: undefined };
 
 // ── State ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -94,6 +96,14 @@ describe('Connector', () => {
         expect(startStore).toHaveBeenCalledOnce();
     });
 
+    it('reports a table that has not been loaded, so the app can offer to load it', async () => {
+        const { connector } = constructReadingConnector();
+
+        const notLoadedError = await captureError(() => connector.queryRecords(QUERY_OPTIONS));
+
+        expect(findStoreErrorId(notLoadedError)).toBe('notLoaded');
+    });
+
     describe('another tab', () => {
         it('takes the store over from the tab holding it, which closes its store to free the files', async () => {
             const { connector: holdingConnector, pool: holdingPool } = constructOpeningConnector();
@@ -107,6 +117,8 @@ describe('Connector', () => {
                 expect(holdingConnector.databases.size).toBe(0);
             });
             expect(holdingPool.pauseVfs).toHaveBeenCalledOnce(); // Pausing closes the pool's files.
+            const heldElsewhereError = await captureError(() => holdingConnector.queryRecords(QUERY_OPTIONS));
+            expect(findStoreErrorId(heldElsewhereError)).toBe('heldElsewhere'); // Every later request says so, rather than that the store is not open.
             await takingConnector.closeStore();
         });
 
@@ -222,7 +234,7 @@ describe('Connector', () => {
         });
 
         it.each([
-            { message: 'The store is open in another tab.', storeStateId: 'heldElsewhere' as const },
+            { message: 'The store is open in another tab or window.', storeStateId: 'heldElsewhere' as const },
             { message: 'This browser gives no storage to keep the store in, as in some private windows.', storeStateId: 'unavailable' as const }
         ])('refuses to list when the store cannot be opened because it is $storeStateId', async ({ message, storeStateId }) => {
             const connector = new Connector({} as never, []);
@@ -387,6 +399,15 @@ function constructOpeningConnector(): {
     const connector = new Connector({} as never, []);
     Object.assign(connector, { loadSqlite: () => Promise.resolve(sqlite) });
     return { connector, pool, sqlite };
+}
+
+async function captureError(action: () => Promise<unknown>): Promise<unknown> {
+    try {
+        await action();
+    } catch (error) {
+        return error;
+    }
+    return undefined;
 }
 
 // The error a browser gives for a file another tab or worker still has open.

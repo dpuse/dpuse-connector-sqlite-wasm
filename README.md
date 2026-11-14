@@ -88,7 +88,7 @@ License data is updated each time `npm run document` is run, using [license-chec
 
 | Dependency                                                       |    Version    | License(s) | Document                                                                        |
 | :--------------------------------------------------------------- | :-----------: | :--------- | :------------------------------------------------------------------------------ |
-| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)     |    1.0.219    | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.219-LICENSE.txt)           |
+| [@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)     |    1.0.220    | MIT        | [LICENSE](licenses/downloads/@dpuse/dpuse-shared@1.0.220-LICENSE.txt)           |
 | [@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm) | 3.54.1-build1 | Apache-2.0 | [LICENSE](licenses/downloads/@sqlite.org/sqlite-wasm@3.54.1-build1-LICENSE.txt) |
 | [valibot](https://github.com/open-circle/valibot)                |     1.5.0     | MIT        | [LICENSE](licenses/downloads/valibot@1.5.0-LICENSE.txt)                         |
 
@@ -96,7 +96,7 @@ License data is updated each time `npm run document` is run, using [license-chec
 
 The dependency tree below shows how each package in the table above is reached — direct and transitive — along with its installed version, release date, and update status. A package that does not ship itself, such as one whose parts are bundled separately, is left out and what ships beneath it is shown in its place. Packages flagged ❗ have a newer version available; ⚠️ indicates a package that hasn't been updated in the last 6 months or longer. Neither flag necessarily indicates a problem: we let new releases stabilise before upgrading, and some packages are mature and stable (have limited or no dependencies), so they require no active development.
 
-- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.219 — this month: 2026-11-14
+- **[@dpuse/dpuse-shared](https://github.com/dpuse/dpuse-shared)** 1.0.220 — this month: 2026-11-14
     - **[valibot](https://github.com/open-circle/valibot)** 1.5.0 — 2 mths ago: 2026-09-09
 - **[@sqlite.org/sqlite-wasm](https://github.com/sqlite/sqlite-wasm)** 3.54.1-build1 — this month: 2026-10-19
 
@@ -112,12 +112,12 @@ _Note: Sonda's Vite reports currently exclude CSS files, since Vite does not gen
 
 | Chunk/Module/File                                                     | Composition                                                                                     |
 | :-------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 304.3&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;76.6&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
-| &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;79.7%&nbsp;·&nbsp;242.5&nbsp;kB                                     |
-| &nbsp;&nbsp;&nbsp;&nbsp;src → index.ts + 1 more                       | `█░░░░░░░░░░░░░░░░░░░`&nbsp;4.8%&nbsp;·&nbsp;14.6&nbsp;kB                                       |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ index.ts            | `▒░░░░░░░░░░░░░░░░░░░`&nbsp;2.7%&nbsp;·&nbsp;8.3&nbsp;kB                                        |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ sqliteStore.ts      | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.1%&nbsp;·&nbsp;6.3&nbsp;kB                                        |
-| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `█░░░░░░░░░░░░░░░░░░░`&nbsp;3.3%&nbsp;·&nbsp;10.0&nbsp;kB                                       |
+| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 305.6&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;76.9&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
+| &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;79.3%&nbsp;·&nbsp;242.5&nbsp;kB                                     |
+| &nbsp;&nbsp;&nbsp;&nbsp;src → index.ts + 1 more                       | `█░░░░░░░░░░░░░░░░░░░`&nbsp;5.0%&nbsp;·&nbsp;15.4&nbsp;kB                                       |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ index.ts            | `▒░░░░░░░░░░░░░░░░░░░`&nbsp;2.9%&nbsp;·&nbsp;9.0&nbsp;kB                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ sqliteStore.ts      | `░░░░░░░░░░░░░░░░░░░░`&nbsp;2.1%&nbsp;·&nbsp;6.4&nbsp;kB                                        |
+| &nbsp;&nbsp;&nbsp;&nbsp;@dpuse/dpuse-shared → dist/dpuse-shared.es.js | `█░░░░░░░░░░░░░░░░░░░`&nbsp;3.5%&nbsp;·&nbsp;10.6&nbsp;kB                                       |
 | &nbsp;&nbsp;&nbsp;&nbsp;(bundler output, whitespace & JSON)           | `██░░░░░░░░░░░░░░░░░░`&nbsp;12.2%&nbsp;·&nbsp;37.2&nbsp;kB                                      |
 
 Bars show each row's share of its output file. ↳ rows are part of the row above.

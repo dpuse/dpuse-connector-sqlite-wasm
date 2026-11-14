@@ -3,7 +3,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import type { Database, OpfsSAHPoolDatabase, SAHPoolUtil, Sqlite3Static } from '@sqlite.org/sqlite-wasm';
 
 // ── DPUse Framework
-import { acquireWebLock, convertStoreRecordToParsedRecord, normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
+import { acquireWebLock, constructStoreError, convertStoreRecordToParsedRecord, findStoreErrorId } from '@dpuse/dpuse-shared';
 import type {
     AuditObjectContentOptions,
     AuditObjectContentResult,
@@ -34,6 +34,7 @@ import type {
     StoreRecord,
     ToolConfig
 } from '@dpuse/dpuse-shared';
+import { normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
 import { readStoreObjectRecords } from '@/sqliteStore';
@@ -54,6 +55,7 @@ const DATABASE_FILE_PATTERN = /^\/([\w-]+)\.sqlite3$/u; // A database's file in 
 const DEFAULT_CHUNK_SIZE = 10_000; // Records read at a time by an audit or a retrieve.
 const DEFAULT_DATABASE_NAME = 'default'; // Used by a path that names no database, so 'orders' and '/default/orders' are the same table.
 const FILES_PER_DATABASE = 2; // The database file, and the journal written beside it while a change is saved.
+const HELD_ELSEWHERE_MESSAGE = 'The store is open in another tab or window.';
 const LOCK_NAME = 'dpuse-connector-sqlite-wasm'; // Held by the one tab that has the store open.
 const POOL_NAME = 'dpuse-connector-sqlite-wasm';
 const PREVIEW_RECORD_COUNT = 50;
@@ -77,6 +79,7 @@ export class Connector implements ConnectorInterface {
     pendingSqlite: Promise<Sqlite3Static> | undefined;
     poolUtility: SAHPoolUtil | undefined;
     releaseLock: (() => Promise<void>) | undefined;
+    storeWasTakenOver: boolean; // Another tab took the store, so this tab says so until it opens the store again.
 
     constructor(connectorUtilities: ConnectorUtilities, toolConfigs: ToolConfig[]) {
         this.connectorUtilities = connectorUtilities;
@@ -86,6 +89,7 @@ export class Connector implements ConnectorInterface {
         this.pendingSqlite = undefined;
         this.poolUtility = undefined;
         this.releaseLock = undefined;
+        this.storeWasTakenOver = false;
         this.toolConfigs = toolConfigs;
     }
 
@@ -118,7 +122,7 @@ export class Connector implements ConnectorInterface {
             const { columnConfigs } = columnAuditor.completeAudit();
             return { contentAuditConfig: constructContentAuditConfig(asAt, startedAt, columnConfigs, recordCount, isComplete), hasHeaders: false }; // A table's columns are named by the database, not by a header record.
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -140,7 +144,7 @@ export class Connector implements ConnectorInterface {
             const { database, tableName } = await this.establishDatabase(options.path);
             dropStoreObject(database, tableName);
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -150,7 +154,7 @@ export class Connector implements ConnectorInterface {
             await this.openStoreForReading();
             return { path: this.findSourceTable(options.id) == null ? undefined : options.id };
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -162,7 +166,7 @@ export class Connector implements ConnectorInterface {
             const connectionNodeConfigs = options.folderPath === '' ? this.listTopNodes() : this.listDatabaseNodes(options.folderPath);
             return { cursor: undefined, connectionNodeConfigs, isMore: false, totalCount: connectionNodeConfigs.length };
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -172,7 +176,7 @@ export class Connector implements ConnectorInterface {
             const recordCount = await loadStoreObject(database, tableName, options.columnConfigs, chunks, resolveRequestSignal(options));
             return { recordCount };
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -211,7 +215,7 @@ export class Connector implements ConnectorInterface {
                 sampleConfig: { hasHeaders: false, issues: [], parsedRecords, size: undefined, text: undefined }
             };
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -220,7 +224,7 @@ export class Connector implements ConnectorInterface {
             const { database, tableName } = await this.establishDatabase(options.path);
             return queryStoreObject(database, { ...options, path: tableName });
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -239,7 +243,7 @@ export class Connector implements ConnectorInterface {
             }
             return { recordCount };
         } catch (error) {
-            throw normalizeToError(error);
+            throw this.normalizeActionError(error);
         }
     }
 
@@ -274,8 +278,9 @@ export class Connector implements ConnectorInterface {
     }
 
     private establishOpenPool(): SAHPoolUtil {
-        if (this.poolUtility == null || this.databases.size === 0) throw new Error('The store is not open.');
-        return this.poolUtility;
+        if (this.poolUtility != null && this.databases.size > 0) return this.poolUtility;
+        if (this.storeWasTakenOver) throw constructStoreError('heldElsewhere', HELD_ELSEWHERE_MESSAGE, 'dpuse-connector-sqlite-wasm.Connector.establishOpenPool');
+        throw new Error('The store is not open.');
     }
 
     // A source action reads a table that is already there, so a database with no file is never opened, because opening it
@@ -364,7 +369,7 @@ export class Connector implements ConnectorInterface {
     // The store then stays open until it is closed, as it does for a data view.
     private async openStoreForReading(): Promise<void> {
         const { storeStateId } = await this.openStore();
-        if (storeStateId === 'heldElsewhere') throw new Error('The store is open in another tab.');
+        if (storeStateId === 'heldElsewhere') throw constructStoreError('heldElsewhere', HELD_ELSEWHERE_MESSAGE, 'dpuse-connector-sqlite-wasm.Connector.openStoreForReading');
         if (storeStateId === 'unavailable') throw new Error('This browser gives no storage to keep the store in, as in some private windows.');
     }
 
@@ -375,6 +380,14 @@ export class Connector implements ConnectorInterface {
         } catch {
             // Already closed as far as it can be.
         }
+    }
+
+    // A request still running when another tab took the store fails on the closed database. It is reported as the store
+    // being open elsewhere, as every later request is.
+    private normalizeActionError(error: unknown): Error {
+        return this.storeWasTakenOver && findStoreErrorId(error) == null
+            ? constructStoreError('heldElsewhere', HELD_ELSEWHERE_MESSAGE, 'dpuse-connector-sqlite-wasm.Connector.normalizeActionError', { cause: error })
+            : normalizeToError(error);
     }
 
     // Resolves once the lock is free for the next open.
@@ -388,6 +401,7 @@ export class Connector implements ConnectorInterface {
     // this tab closes the store, which finishes any write and frees the files for that tab to open.
     private async startStore(shouldTakeOver: boolean): Promise<OpenStoreResult> {
         const onLost = (): void => {
+            this.storeWasTakenOver = true;
             void this.closeStoreAfterTakeover();
         };
         const releaseLock = await acquireWebLock(LOCK_NAME, { onLost, takeOver: shouldTakeOver }); // Held until the store closes.
@@ -402,6 +416,7 @@ export class Connector implements ConnectorInterface {
             }
             const defaultDatabase = new poolUtility.OpfsSAHPoolDb(`/${DEFAULT_DATABASE_NAME}.sqlite3`);
             this.databases.set(DEFAULT_DATABASE_NAME, defaultDatabase);
+            this.storeWasTakenOver = false;
             return { storeStateId: 'ready' };
         } catch (error) {
             await this.releaseHeldLock();

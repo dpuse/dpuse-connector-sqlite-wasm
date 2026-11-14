@@ -2,6 +2,7 @@
 import type { BindableValue, Database } from '@sqlite.org/sqlite-wasm';
 
 // ── DPUse Framework
+import { constructStoreError } from '@dpuse/dpuse-shared';
 import type {
     DataSubtypeId,
     DataTypeId,
@@ -115,7 +116,9 @@ export function readStoreObjectRecords(
 
 // The query brings the columns the object was loaded with, so each stored value is read back as its column's type.
 export function queryStoreObject(database: Database, options: QueryRecordsOptions): QueryRecordsResult {
-    if (database.selectValue("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", [options.path]) == null) throw new Error(`'${options.path}' has not been loaded.`);
+    if (database.selectValue("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", [options.path]) == null) {
+        throw constructStoreError('notLoaded', `'${options.path}' has not been loaded.`, 'dpuse-connector-sqlite-wasm.sqliteStore.queryStoreObject');
+    }
     const storedColumns = constructStoredColumns(options.columnConfigs);
     const isGrouped = options.groupColumnIndexes.length > 0;
     const resultColumns = isGrouped ? constructGroupedResultColumns(storedColumns, options) : storedColumns.map((storedColumn, columnIndex) => ({ columnIndex, storedColumn }));
