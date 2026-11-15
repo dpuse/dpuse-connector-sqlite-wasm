@@ -252,11 +252,11 @@ describe('Connector', () => {
             await expect(connector.findObject({ id: '/sales/returns' })).resolves.toEqual({ path: '/sales/returns' });
         });
 
-        it('gives no path for a table or database that is not there, without creating the database', async () => {
+        it('throws for a table or database that is not there, without creating the database', async () => {
             const connector = constructListingConnector({ '/default.sqlite3': [] });
 
-            await expect(connector.findObject({ id: '/default/missing' })).resolves.toEqual({ path: undefined });
-            await expect(connector.findObject({ id: '/missing/orders' })).resolves.toEqual({ path: undefined });
+            await expect(connector.findObject({ id: '/default/missing' })).rejects.toThrow("Object '/default/missing' not found.");
+            await expect(connector.findObject({ id: '/missing/orders' })).rejects.toThrow("Object '/missing/orders' not found.");
             expect(connector.databases.has('missing')).toBe(false);
         });
     });

@@ -34,7 +34,7 @@ import type {
     StoreRecord,
     ToolConfig
 } from '@dpuse/dpuse-shared';
-import { normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
+import { ConnectorError, normalizeToError, resolveRequestSignal, resolveStorePath } from '@dpuse/dpuse-shared';
 
 // ── Local Framework
 import { readStoreObjectRecords } from '@/sqliteStore';
@@ -152,7 +152,8 @@ export class Connector implements ConnectorInterface {
     async findObject(options: FindObjectOptions): Promise<FindObjectResult> {
         try {
             await this.openStoreForReading();
-            return { path: this.findSourceTable(options.id) == null ? undefined : options.id };
+            if (this.findSourceTable(options.id) != null) return { path: options.id };
+            throw new ConnectorError(`Object '${options.id}' not found.`, 'dpuse-connector-sqlite-wasm.Connector.findObject');
         } catch (error) {
             throw this.normalizeActionError(error);
         }

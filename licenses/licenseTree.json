@@ -1,14 +1,14 @@
 {
-  "version": "1.0.124",
+  "version": "1.0.125",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
-      "version": "1.0.152",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.152.tgz",
+      "version": "1.0.155",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.155.tgz",
       "overridden": false,
       "dependencies": {
         "@dpuse/dpuse-shared": {
-          "version": "1.0.220"
+          "version": "1.0.225"
         },
         "license-checker-rseidelsohn": {
           "version": "5.0.1",
@@ -1194,8 +1194,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.220",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.220.tgz",
+      "version": "1.0.225",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.225.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -1204,15 +1204,15 @@
           "overridden": false,
           "dependencies": {
             "@tokenizer/inflate": {
-              "version": "0.6.0",
-              "resolved": "https://registry.npmjs.org/@tokenizer/inflate/-/inflate-0.6.0.tgz",
+              "version": "0.6.1",
+              "resolved": "https://registry.npmjs.org/@tokenizer/inflate/-/inflate-0.6.1.tgz",
               "overridden": false,
               "dependencies": {
                 "debug": {
                   "version": "4.4.3"
                 },
                 "strtok3": {
-                  "version": "10.7.0"
+                  "version": "10.8.0"
                 },
                 "token-types": {
                   "version": "6.2.0"
@@ -1220,8 +1220,8 @@
               }
             },
             "strtok3": {
-              "version": "10.7.0",
-              "resolved": "https://registry.npmjs.org/strtok3/-/strtok3-10.7.0.tgz",
+              "version": "10.8.0",
+              "resolved": "https://registry.npmjs.org/strtok3/-/strtok3-10.8.0.tgz",
               "overridden": false,
               "dependencies": {
                 "@tokenizer/token": {
@@ -2634,6 +2634,11 @@
           "overridden": false
         }
       }
+    },
+    "@types/trusted-types": {
+      "version": "2.0.7",
+      "resolved": "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz",
+      "overridden": false
     },
     "@vitest/coverage-v8": {
       "version": "5.1.0",
