@@ -270,18 +270,8 @@ describe('Connector', () => {
 
             expect(inferDataTypes).toHaveBeenCalledWith(
                 [
-                    [
-                        { value: '1', valueWasQuoted: false },
-                        { value: new Date(19_786 * DAY).toISOString(), valueWasQuoted: false },
-                        { value: 'true', valueWasQuoted: false },
-                        { value: 'Ann', valueWasQuoted: false }
-                    ],
-                    [
-                        { value: '2', valueWasQuoted: false },
-                        { value: null, valueWasQuoted: false },
-                        { value: 'false', valueWasQuoted: false },
-                        { value: 'Bo', valueWasQuoted: false }
-                    ]
+                    ['1', new Date(19_786 * DAY).toISOString(), 'true', 'Ann'],
+                    ['2', null, 'false', 'Bo']
                 ],
                 false,
                 [
@@ -312,7 +302,7 @@ describe('Connector', () => {
             const result = await connector.auditObjectContent({ ...READ_OPTIONS, byteLimit: undefined, hasHeaders: false, path: 'amounts', stopSignal: undefined, supportsTransferableStreams: false }, chunk);
 
             expect(constructColumnAuditor).toHaveBeenCalledWith(false, [{ dataSubtypeId: 'integer', dataTypeId: 'numeric', label: undefined, name: 'c0' }]);
-            expect(auditRecords.mock.calls).toEqual([[[[{ value: '1', valueWasQuoted: false }], [{ value: '2', valueWasQuoted: false }]]], [[[{ value: '3', valueWasQuoted: false }]]]]);
+            expect(auditRecords.mock.calls).toEqual([[[['1'], ['2']]], [[['3']]]]);
             expect(chunk.mock.calls).toEqual([
                 [2, 0],
                 [1, 0]
