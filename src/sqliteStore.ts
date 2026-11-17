@@ -1,5 +1,5 @@
 // ── External Dependencies & Registrations
-import type { BindableValue, Database } from '@sqlite.org/sqlite-wasm';
+import type { BindableValue, Database, PreparedStatement, Sqlite3Static } from '@sqlite.org/sqlite-wasm';
 
 // ── DPUse Framework
 import { constructStoreError } from '@dpuse/dpuse-shared';
@@ -25,7 +25,35 @@ interface StoredColumn {
     isDayNumber: boolean; // Set for a column of dates, each stored as a count of days.
 }
 
+// SQLite's own functions for binding one value to a prepared statement and running it, as the WebAssembly module
+// exports them. Each takes the statement's pointer, and a bind takes the parameter's place, counted from 1.
+interface BindExports {
+    sqlite3_bind_double: (statementPointer: number, parameterIndex: number, value: number) => number;
+    sqlite3_bind_int: (statementPointer: number, parameterIndex: number, value: number) => number;
+    sqlite3_bind_int64: (statementPointer: number, parameterIndex: number, value: bigint) => number;
+    sqlite3_bind_null: (statementPointer: number, parameterIndex: number) => number;
+    sqlite3_bind_text: (statementPointer: number, parameterIndex: number, textPointer: number, byteCount: number, destructor: number) => number;
+    sqlite3_reset: (statementPointer: number) => number;
+    sqlite3_step: (statementPointer: number) => number;
+}
+
+// Inserts records through one prepared statement, until it is released.
+interface RecordInserter {
+    insert: (record: StoreRecord) => void;
+    release: () => void;
+}
+
 // ── Constants ────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+const SQLITE_OK = 0;
+const SQLITE_DONE = 101; // What a step gives when an insert has run.
+const SQLITE_TRANSIENT = -1; // Tells SQLite to copy bound text, so the buffer it came from can be used again at once.
+const INITIAL_TEXT_BYTE_COUNT = 4096;
+const MAX_BYTES_PER_CHARACTER = 3; // The most bytes one UTF-16 unit takes in UTF-8.
+const MAX_INT32 = 2_147_483_647;
+const MIN_INT32 = -2_147_483_648;
+const MAX_INT64 = 9_223_372_036_854_775_807n;
+const MIN_INT64 = -9_223_372_036_854_775_808n;
 
 const LIKE_ESCAPE_SQL = String.raw`ESCAPE '\'`; // Lets a filter match '%' and '_' as written, not as wildcards.
 
@@ -56,6 +84,7 @@ export function listStoreObjectNames(database: Database): string[] {
 // Replaces an object with the records given, in one transaction, so a failed or stopped load leaves the earlier one in
 // place. 'signal' is checked between chunks. The columns' types are not kept, because every query brings them.
 export async function loadStoreObject(
+    sqlite3: Sqlite3Static,
     database: Database,
     path: string,
     columnConfigs: ObjectColumnConfig[],
@@ -73,15 +102,15 @@ export async function loadStoreObject(
         database.exec(`CREATE TABLE ${tableName} (${columnDefinitions.join(', ')})`);
         if (storedColumns.length > 0) {
             const statement = database.prepare(`INSERT INTO ${tableName} VALUES (${storedColumns.map(() => '?').join(', ')})`);
+            const recordInserter = constructRecordInserter(sqlite3, database, statement, storedColumns);
             try {
                 for await (const records of chunks) {
                     signal.throwIfAborted();
-                    for (const record of records) {
-                        statement.bind(storedColumns.map((storedColumn, columnIndex) => toBindableValue(record[columnIndex] ?? null, storedColumn))).stepReset();
-                    }
+                    for (const record of records) recordInserter.insert(record);
                     recordCount += records.length;
                 }
             } finally {
+                recordInserter.release();
                 statement.finalize();
             }
         }
@@ -310,4 +339,75 @@ function toBindableValue(value: StoreValue, storedColumn: StoredColumn | undefin
     if (value instanceof Date) return storedColumn?.isDayNumber === true ? Math.floor(value.getTime() / MILLISECONDS_PER_DAY) : value.getTime();
     if (typeof value === 'boolean') return value ? 1 : 0;
     return value;
+}
+
+// Binds each value with SQLite's own function for its type, where the package's 'bind' asks SQLite how many
+// parameters the statement has for every value, works out the value's type again, and allocates memory for every
+// text. On a file of 28 million values that was most of the time a load took. The values are stored the same way: a
+// whole number as an integer, any other number as a double, a date as its number, and text as UTF-8.
+function constructRecordInserter(sqlite3: Sqlite3Static, database: Database, statement: PreparedStatement, storedColumns: StoredColumn[]): RecordInserter {
+    const exports = sqlite3.wasm.exports as BindExports;
+    const { pointer } = statement;
+    if (pointer === undefined) throw new Error('The statement is closed.');
+    const statementPointer: number = pointer;
+    const textEncoder = new TextEncoder();
+    // A parameter never bound is null, and a binding stays until it is replaced, so a null after a null is not bound
+    // again. Most of a sparse file's values are null.
+    const nullFlags = new Uint8Array(storedColumns.length).fill(1);
+    let textByteCount = INITIAL_TEXT_BYTE_COUNT;
+    let textPointer = sqlite3.wasm.alloc(textByteCount);
+
+    function bindNumber(parameterIndex: number, value: number): number {
+        if (Number.isSafeInteger(value)) {
+            const isInt32 = value >= MIN_INT32 && value <= MAX_INT32;
+            return isInt32 ? exports.sqlite3_bind_int(statementPointer, parameterIndex, value) : exports.sqlite3_bind_int64(statementPointer, parameterIndex, BigInt(value));
+        }
+        return exports.sqlite3_bind_double(statementPointer, parameterIndex, value);
+    }
+
+    // Written into one buffer, kept for the whole load and only replaced by a larger one, which SQLite copies from.
+    function bindText(parameterIndex: number, value: string): number {
+        if (value.length * MAX_BYTES_PER_CHARACTER > textByteCount) {
+            sqlite3.wasm.dealloc(textPointer);
+            textByteCount = value.length * MAX_BYTES_PER_CHARACTER * 2;
+            textPointer = sqlite3.wasm.alloc(textByteCount);
+        }
+        const { written } = textEncoder.encodeInto(value, sqlite3.wasm.heap8u().subarray(textPointer, textPointer + textByteCount));
+        return exports.sqlite3_bind_text(statementPointer, parameterIndex, textPointer, written, SQLITE_TRANSIENT);
+    }
+
+    function bindValue(parameterIndex: number, value: Exclude<StoreValue, null>, storedColumn: StoredColumn | undefined): number {
+        if (typeof value === 'number') return bindNumber(parameterIndex, value);
+        if (typeof value === 'string') return bindText(parameterIndex, value);
+        if (typeof value === 'boolean') return exports.sqlite3_bind_int(statementPointer, parameterIndex, value ? 1 : 0);
+        if (typeof value === 'bigint') {
+            if (value < MIN_INT64 || value > MAX_INT64) throw new RangeError(`The whole number ${String(value)} is too large to store.`);
+            return exports.sqlite3_bind_int64(statementPointer, parameterIndex, value);
+        }
+        return bindNumber(parameterIndex, storedColumn?.isDayNumber === true ? Math.floor(value.getTime() / MILLISECONDS_PER_DAY) : value.getTime());
+    }
+
+    return {
+        insert(record: StoreRecord): void {
+            let columnIndex = 0;
+            for (const storedColumn of storedColumns) {
+                const value = record[columnIndex] ?? null;
+                if (value === null) {
+                    if (nullFlags[columnIndex] === 0) database.checkRc(exports.sqlite3_bind_null(statementPointer, columnIndex + 1));
+                    nullFlags[columnIndex] = 1;
+                } else {
+                    nullFlags[columnIndex] = 0;
+                    const resultCode = bindValue(columnIndex + 1, value, storedColumn);
+                    if (resultCode !== SQLITE_OK) database.checkRc(resultCode);
+                }
+                columnIndex++;
+            }
+            const stepResultCode = exports.sqlite3_step(statementPointer);
+            const resetResultCode = exports.sqlite3_reset(statementPointer);
+            if (stepResultCode !== SQLITE_DONE) database.checkRc(resetResultCode === SQLITE_OK ? stepResultCode : resetResultCode);
+        },
+        release(): void {
+            sqlite3.wasm.dealloc(textPointer);
+        }
+    };
 }

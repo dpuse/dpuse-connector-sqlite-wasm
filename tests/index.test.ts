@@ -27,6 +27,7 @@ describe('Connector', () => {
         const connector = new Connector({} as never, []);
         connector.poolUtility = { isPaused: (): boolean => true } as never;
         connector.databases.set('default', new sqlite3.oo1.DB(':memory:'));
+        Object.assign(connector, { loadSqlite: () => Promise.resolve(sqlite3) }); // The module the database was opened with, which Node cannot load from the connector's own folder.
         const abortController = new AbortController();
         abortController.abort(new Error('Aborted.'));
         const loadOptions = { columnConfigs: [{ dataSubtypeId: undefined, dataTypeId: 'numeric' as const, label: { en: 'Value' } }], path: 'sales' };

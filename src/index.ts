@@ -174,7 +174,7 @@ export class Connector implements ConnectorInterface {
     async loadObjectRecords(options: LoadObjectRecordsOptions, chunks: AsyncIterable<StoreRecord[]>): Promise<LoadObjectRecordsResult> {
         try {
             const { database, tableName } = await this.establishDatabase(options.path);
-            const recordCount = await loadStoreObject(database, tableName, options.columnConfigs, chunks, resolveRequestSignal(options));
+            const recordCount = await loadStoreObject(await this.loadSqlite(), database, tableName, options.columnConfigs, chunks, resolveRequestSignal(options));
             return { recordCount };
         } catch (error) {
             throw this.normalizeActionError(error);

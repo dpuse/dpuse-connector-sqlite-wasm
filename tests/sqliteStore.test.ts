@@ -36,7 +36,7 @@ describe('sqliteStore', () => {
 
     beforeEach(async () => {
         database = new sqlite3.oo1.DB(':memory:');
-        await loadStoreObject(database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS.slice(0, 2), RECORDS.slice(2)]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS.slice(0, 2), RECORDS.slice(2)]), new AbortController().signal);
     });
 
     it('loads records and returns them with their audited types', () => {
@@ -108,10 +108,10 @@ describe('sqliteStore', () => {
     });
 
     it('replaces an earlier load, and keeps it when a load fails', async () => {
-        await loadStoreObject(database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS.slice(0, 1)]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS.slice(0, 1)]), new AbortController().signal);
         const failingChunks = yieldChunks([RECORDS], new Error('Source failed.'));
 
-        await expect(loadStoreObject(database, 'sales', COLUMN_CONFIGS, failingChunks, new AbortController().signal)).rejects.toThrow('Source failed.');
+        await expect(loadStoreObject(sqlite3, database, 'sales', COLUMN_CONFIGS, failingChunks, new AbortController().signal)).rejects.toThrow('Source failed.');
         expect(queryStoreObject(database, constructQuery({})).totalCount).toBe(1);
     });
 
@@ -131,7 +131,7 @@ describe('sqliteStore large number round trip', () => {
             [9_007_199_254_740_993n, 3],
             [42n, 4]
         ];
-        await loadStoreObject(database, 'large', LARGE_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'large', LARGE_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
 
         const result = queryStoreObject(database, constructQuery({ columnConfigs: LARGE_COLUMN_CONFIGS, path: 'large', sorts: [{ columnIndex: 0, directionId: 'ascending' }] }));
 
@@ -154,7 +154,7 @@ describe('sqliteStore temporal round trip', () => {
     }
 
     async function load(records: StoreRecord[]): Promise<void> {
-        await loadStoreObject(database, 'dates', TEMPORAL_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'dates', TEMPORAL_COLUMN_CONFIGS, yieldChunks([records]), new AbortController().signal);
     }
 
     function query(options: Partial<QueryRecordsOptions>): StoreRecord[] {
@@ -163,6 +163,28 @@ describe('sqliteStore temporal round trip', () => {
 
     beforeEach(() => {
         database = new sqlite3.oo1.DB(':memory:');
+    });
+
+    it('stores each value as it is, whatever came before it in its column', async () => {
+        const database = new sqlite3.oo1.DB(':memory:');
+        const columnConfigs: ObjectColumnConfig[] = [
+            { dataSubtypeId: 'plain', dataTypeId: 'string', label: { en: 'Text' } },
+            { dataSubtypeId: 'decimal', dataTypeId: 'numeric', label: { en: 'Number' } }
+        ];
+        const longText = 'é😀'.repeat(5000); // Longer than the buffer text is first written to, and several bytes a character.
+        const records: StoreRecord[] = [
+            ['a', 1],
+            [null, null],
+            [null, null],
+            [longText, 81_449_000_000_000_000_000], // A whole number past the largest SQLite holds as an integer.
+            ['', 2.5],
+            [null, -3],
+            ['b', null]
+        ];
+
+        await loadStoreObject(sqlite3, database, 'mixed', columnConfigs, yieldChunks([records.slice(0, 3), records.slice(3)]), new AbortController().signal);
+
+        expect(database.selectArrays('SELECT c0, c1 FROM mixed ORDER BY rowid')).toEqual(records);
     });
 
     it('returns every date, time and date-time exactly as loaded, across the whole calendar and day', async () => {
@@ -241,7 +263,7 @@ describe('sqliteStore source reading', () => {
             constructColumnConfig('string'),
             constructColumnConfig('unknown')
         ];
-        await loadStoreObject(database, 'everything', columnConfigs, yieldChunks([]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'everything', columnConfigs, yieldChunks([]), new AbortController().signal);
 
         expect(describeStoreObject(database, 'everything')).toEqual(
             columnConfigs.map(({ dataSubtypeId, dataTypeId }, columnIndex) => ({ dataSubtypeId, dataTypeId, label: { en: `c${String(columnIndex)}` } }))
@@ -253,12 +275,12 @@ describe('sqliteStore source reading', () => {
     });
 
     it('reads every record typed, a chunk at a time in the order it was loaded, after a load into the same database', async () => {
-        await loadStoreObject(database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS]), new AbortController().signal);
+        await loadStoreObject(sqlite3, database, 'sales', COLUMN_CONFIGS, yieldChunks([RECORDS]), new AbortController().signal);
         const columnConfigs = describeStoreObject(database, 'sales');
 
         const firstChunk = readStoreObjectRecords(database, 'sales', columnConfigs, 3, undefined);
         const secondChunk = readStoreObjectRecords(database, 'sales', columnConfigs, 3, firstChunk.lastRowId);
-        await loadStoreObject(database, 'copy', columnConfigs, yieldChunks([firstChunk.records, secondChunk.records]), new AbortController().signal); // No read is left open to block it.
+        await loadStoreObject(sqlite3, database, 'copy', columnConfigs, yieldChunks([firstChunk.records, secondChunk.records]), new AbortController().signal); // No read is left open to block it.
 
         expect([...firstChunk.records, ...secondChunk.records]).toEqual(RECORDS);
         expect(readStoreObjectRecords(database, 'sales', columnConfigs, 3, secondChunk.lastRowId)).toEqual({ lastRowId: undefined, records: [] });
