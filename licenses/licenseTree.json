@@ -1,14 +1,14 @@
 {
-  "version": "1.0.127",
+  "version": "1.0.128",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
-      "version": "1.0.155",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.155.tgz",
+      "version": "1.0.156",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-development/-/dpuse-development-1.0.156.tgz",
       "overridden": false,
       "dependencies": {
         "@dpuse/dpuse-shared": {
-          "version": "1.0.235"
+          "version": "1.0.243"
         },
         "license-checker-rseidelsohn": {
           "version": "5.0.1",
@@ -1194,8 +1194,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.235",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.235.tgz",
+      "version": "1.0.243",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.243.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -1502,8 +1502,8 @@
           }
         },
         "eslint-plugin-jsdoc": {
-          "version": "65.4.10",
-          "resolved": "https://registry.npmjs.org/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-65.4.10.tgz",
+          "version": "65.4.12",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-65.4.12.tgz",
           "overridden": false,
           "dependencies": {
             "@es-joy/escodegen": {
@@ -2328,8 +2328,8 @@
       "overridden": false
     },
     "@vitest/coverage-v8": {
-      "version": "5.1.0",
-      "resolved": "https://registry.npmjs.org/@vitest/coverage-v8/-/coverage-v8-5.1.0.tgz",
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/@vitest/coverage-v8/-/coverage-v8-5.1.1.tgz",
       "overridden": false,
       "dependencies": {
         "@bcoe/v8-coverage": {
@@ -2445,7 +2445,7 @@
           "overridden": false
         },
         "vitest": {
-          "version": "5.1.0"
+          "version": "5.1.1"
         }
       }
     },
@@ -3068,8 +3068,8 @@
           "dependencies": {
             "@microsoft/api-extractor": {},
             "@rollup/pluginutils": {
-              "version": "5.4.0",
-              "resolved": "https://registry.npmjs.org/@rollup/pluginutils/-/pluginutils-5.4.0.tgz",
+              "version": "5.5.1",
+              "resolved": "https://registry.npmjs.org/@rollup/pluginutils/-/pluginutils-5.5.1.tgz",
               "overridden": false,
               "dependencies": {
                 "@types/estree": {
@@ -3430,8 +3430,8 @@
       }
     },
     "vitest": {
-      "version": "5.1.0",
-      "resolved": "https://registry.npmjs.org/vitest/-/vitest-5.1.0.tgz",
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-5.1.1.tgz",
       "overridden": false,
       "dependencies": {
         "@edge-runtime/vm": {},
@@ -3461,19 +3461,19 @@
         "@vitest/browser-webdriverio": {},
         "@vitest/coverage-istanbul": {},
         "@vitest/coverage-v8": {
-          "version": "5.1.0"
+          "version": "5.1.1"
         },
         "@vitest/mocker": {
-          "version": "5.1.0",
-          "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.1.0.tgz",
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.1.1.tgz",
           "overridden": false,
           "dependencies": {
             "@jridgewell/trace-mapping": {
               "version": "0.3.31"
             },
             "@vitest/spy": {
-              "version": "5.1.0",
-              "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-5.1.0.tgz",
+              "version": "5.1.1",
+              "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-5.1.1.tgz",
               "overridden": false
             },
             "estree-walker": {
