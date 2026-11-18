@@ -337,6 +337,19 @@ describe('Connector', () => {
             expect(summary).toEqual({ recordCount: 3 });
         });
 
+        it("gives the table's total record count with every chunk, counted before the read", async () => {
+            const { connector } = constructReadingConnector();
+            connector.databases.get('default')?.exec('CREATE TABLE amounts (c0 INTEGER); INSERT INTO amounts VALUES (1), (2), (3)');
+            const retrieval = connector.retrieveRecords({ ...READ_OPTIONS, path: '/default/amounts' });
+
+            const first = await retrieval.next();
+            const second = await retrieval.next();
+            await retrieval.return({ recordCount: 0 });
+
+            expect(first.value).toEqual({ records: [[1], [2]], totalRecordCount: 3, typeId: 'storeRecordArray' });
+            expect(second.value).toEqual({ records: [[3]], totalRecordCount: 3, typeId: 'storeRecordArray' });
+        });
+
         it('stops when its request is aborted', async () => {
             const { connector } = constructReadingConnector();
             connector.databases.get('default')?.exec('CREATE TABLE amounts (c0 INTEGER); INSERT INTO amounts VALUES (1), (2), (3)');

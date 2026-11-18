@@ -240,11 +240,12 @@ export class Connector implements ConnectorInterface {
         try {
             await this.openStoreForReading();
             const sourceTable = this.establishSourceTable(options.path);
+            const totalRecordCount = countStoreObjectRecords(sourceTable.database, sourceTable.tableName); // So a load can show how far it has got.
             let recordCount = 0;
             const recordChunks = readRecordChunks(sourceTable, options.chunkSize ?? DEFAULT_CHUNK_SIZE);
             for await (const records of recordChunks) {
                 signal.throwIfAborted();
-                yield { records, typeId: 'storeRecordArray' };
+                yield { records, totalRecordCount, typeId: 'storeRecordArray' };
                 recordCount += records.length;
             }
             return { recordCount };

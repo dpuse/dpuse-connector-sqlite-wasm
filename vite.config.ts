@@ -19,10 +19,14 @@ import config from './config.json' with { type: 'json' };
 // Ships SQLite's '.wasm' file beside the connector's script, not inlined, so it is smaller to download and compiles
 // while it downloads. In library mode Vite inlines every file that SQLite names with 'new URL(…, import.meta.url)',
 // including two workers the connector never starts, so those references are hidden from Vite. The connector finds the
-// '.wasm' file itself through 'locateFile'.
+// '.wasm' file itself through 'locateFile'. SQLite's licence, Apache-2.0, asks that a changed file says it was changed,
+// so the built script opens with a notice. It is a '/*!' comment, which the bundler keeps.
 function shipSqliteWasm(): Plugin {
     const wasmPath = createRequire(import.meta.url).resolve('@sqlite.org/sqlite-wasm/sqlite3.wasm');
+    const changeNotice =
+        "/*! Includes @sqlite.org/sqlite-wasm (Apache-2.0), changed by DPUse: its three 'new URL(…, import.meta.url)' file references use 'globalThis.location.href' instead, so its files are not embedded in this script. Nothing else is changed. */";
     return {
+        banner: () => changeNotice,
         enforce: 'pre',
         name: 'ship-sqlite-wasm',
         transform(code, id) {
