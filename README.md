@@ -113,7 +113,7 @@ _Note: Sonda's Vite reports currently exclude CSS files, since Vite does not gen
 
 | Chunk/Module/File                                                     | Composition                                                                                     |
 | :-------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 307.3&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;77.5&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
+| **dist/dpuse-connector-sqlite-wasm.es.js**                            | 307.3&nbsp;kB&nbsp;·&nbsp;gzip&nbsp;77.6&nbsp;kB&nbsp;·&nbsp;100.0%&nbsp;of&nbsp;the&nbsp;build |
 | &nbsp;&nbsp;&nbsp;&nbsp;@sqlite.org/sqlite-wasm → dist/index.mjs      | `████████████████░░░░`&nbsp;78.9%&nbsp;·&nbsp;242.5&nbsp;kB                                     |
 | &nbsp;&nbsp;&nbsp;&nbsp;src → index.ts + 1 more                       | `█░░░░░░░░░░░░░░░░░░░`&nbsp;5.5%&nbsp;·&nbsp;17.0&nbsp;kB                                       |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ index.ts            | `▒░░░░░░░░░░░░░░░░░░░`&nbsp;3.0%&nbsp;·&nbsp;9.1&nbsp;kB                                        |

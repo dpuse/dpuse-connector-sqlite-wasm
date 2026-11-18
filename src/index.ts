@@ -97,8 +97,12 @@ export class Connector implements ConnectorInterface {
 
     // A table's columns have the types they were created with, so the audit counts values against them rather than
     // working types out. A table has no bytes, so 'byteLimit' does not apply, and the audit reads every record unless
-    // 'stopSignal' fires.
-    async auditObjectContent(options: AuditObjectContentOptions, chunk: (recordCount: number, byteCount: number) => void): Promise<AuditObjectContentResult> {
+    // 'stopSignal' fires. With no bytes to measure progress by, the table's records are counted first and the total goes
+    // with every chunk.
+    async auditObjectContent(
+        options: AuditObjectContentOptions,
+        chunk: (recordCount: number, byteCount: number, totalRecordCount?: number) => void
+    ): Promise<AuditObjectContentResult> {
         const signal = resolveRequestSignal(options);
         try {
             const asAt = Date.now();
@@ -106,6 +110,7 @@ export class Connector implements ConnectorInterface {
             await this.openStoreForReading();
             const sourceTable = this.establishSourceTable(options.path);
             const columnAuditor = this.connectorUtilities.constructColumnAuditor(false, constructDeclaredColumnConfigs(sourceTable.columnConfigs));
+            const totalRecordCount = countStoreObjectRecords(sourceTable.database, sourceTable.tableName);
             let recordCount = 0;
             let isComplete = true;
             const recordChunks = readRecordChunks(sourceTable, options.chunkSize ?? DEFAULT_CHUNK_SIZE);
@@ -117,7 +122,7 @@ export class Connector implements ConnectorInterface {
                 }
                 columnAuditor.auditRecords(records.map((record) => convertStoreRecordToParsedRecord(record)));
                 recordCount += records.length;
-                chunk(records.length, 0);
+                chunk(records.length, 0, totalRecordCount);
             }
             const { columnConfigs } = columnAuditor.completeAudit();
             return { contentAuditConfig: constructContentAuditConfig(asAt, startedAt, columnConfigs, recordCount, isComplete), hasHeaders: false }; // A table's columns are named by the database, not by a header record.

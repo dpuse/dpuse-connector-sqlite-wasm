@@ -305,9 +305,9 @@ describe('Connector', () => {
             expect(constructColumnAuditor).toHaveBeenCalledWith(false, [{ dataSubtypeId: 'integer', dataTypeId: 'numeric', label: undefined, name: 'c0' }]);
             expect(auditRecords.mock.calls).toEqual([[[['1'], ['2']]], [[['3']]]]);
             expect(chunk.mock.calls).toEqual([
-                [2, 0],
-                [1, 0]
-            ]);
+                [2, 0, 3],
+                [1, 0, 3]
+            ]); // Each with the table's total record count, counted before the read.
             expect(result).toEqual({ contentAuditConfig: expect.objectContaining({ columns: ['audited'], isComplete: true, recordCount: 3 }) as unknown, hasHeaders: false });
         });
 
