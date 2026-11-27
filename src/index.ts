@@ -214,9 +214,10 @@ export class Connector implements ConnectorInterface {
             const { records } = readStoreObjectRecords(database, tableName, columnConfigs, PREVIEW_RECORD_COUNT, undefined);
             const totalCount = countStoreObjectRecords(database, tableName);
             const parsedRecords = records.map((record) => convertStoreRecordToParsedRecord(record));
-            const inferenceSummary = this.connectorUtilities.inferDataTypes(parsedRecords, false, constructDeclaredColumnConfigs(columnConfigs));
+            const isComplete = records.length === totalCount;
+            const inferenceSummary = this.connectorUtilities.inferDataTypes(parsedRecords, false, constructDeclaredColumnConfigs(columnConfigs), isComplete);
             return {
-                contentAuditConfig: constructContentAuditConfig(asAt, startedAt, inferenceSummary.columnConfigs, records.length, records.length === totalCount),
+                contentAuditConfig: constructContentAuditConfig(asAt, startedAt, inferenceSummary.columnConfigs, records.length, isComplete),
                 readingConfig: constructReadingConfig(),
                 sampleConfig: { hasHeaders: false, issues: [], parsedRecords, size: undefined, text: undefined }
             };

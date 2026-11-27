@@ -264,7 +264,6 @@ function escapeLikeText(text: string): string {
 // 1970, and a time as milliseconds since midnight. All of them sort and compare correctly, and take the least space.
 // SQLite returns a whole number as a bigint only when it is too large to be exact, so a column of whole numbers beyond
 // ±2^53 turns its smaller values into bigints too, and holds one type throughout.
-// eslint-disable-next-line sonarjs/function-return-type -- A store value is one of several types, by its column.
 function fromStoredValue(value: unknown, storedColumn: StoredColumn | undefined): StoreValue {
     if (value == null) return null;
     if (storedColumn?.dataTypeId === 'boolean') return value === 1 || value === 1n;
@@ -334,7 +333,6 @@ function constructStoredColumns(columnConfigs: ObjectColumnConfig[]): StoredColu
     return columnConfigs.map(({ dataSubtypeId, dataTypeId }) => ({ dataSubtypeId, dataTypeId, isDayNumber: dataTypeId === 'temporal' && dataSubtypeId === 'date' }));
 }
 
-// eslint-disable-next-line sonarjs/function-return-type -- A bound value is one of several types, by its column.
 function toBindableValue(value: StoreValue, storedColumn: StoredColumn | undefined): BindableValue {
     if (value instanceof Date) return storedColumn?.isDayNumber === true ? Math.floor(value.getTime() / MILLISECONDS_PER_DAY) : value.getTime();
     if (typeof value === 'boolean') return value ? 1 : 0;

@@ -280,7 +280,8 @@ describe('Connector', () => {
                     { dataSubtypeId: 'date', dataTypeId: 'temporal', label: undefined, name: 'c1' },
                     { dataSubtypeId: undefined, dataTypeId: 'boolean', label: undefined, name: 'c2' },
                     { dataSubtypeId: undefined, dataTypeId: 'string', label: undefined, name: 'c3' }
-                ]
+                ],
+                true // The sample is the whole table.
             );
             expect(result.contentAuditConfig).toEqual(expect.objectContaining({ byteCount: 0, columns: ['inferred'], isComplete: true, recordCount: 2 }));
             expect(result.readingConfig).toEqual(expect.objectContaining({ dataFormatId: 'unknown', hasHeaders: false, isDeclared: true }));
