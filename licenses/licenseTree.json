@@ -1,5 +1,5 @@
 {
-  "version": "1.0.132",
+  "version": "1.0.133",
   "name": "@dpuse/dpuse-connector-sqlite-wasm",
   "dependencies": {
     "@dpuse/dpuse-development": {
@@ -125,7 +125,7 @@
           }
         },
         "@dpuse/dpuse-shared": {
-          "version": "1.0.253"
+          "version": "1.0.256"
         },
         "npm-check-updates": {
           "version": "23.1.1",
@@ -201,8 +201,8 @@
       }
     },
     "@dpuse/dpuse-shared": {
-      "version": "1.0.253",
-      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.253.tgz",
+      "version": "1.0.256",
+      "resolved": "https://registry.npmjs.org/@dpuse/dpuse-shared/-/dpuse-shared-1.0.256.tgz",
       "overridden": false,
       "dependencies": {
         "file-type": {
@@ -284,7 +284,7 @@
               "version": "4.0.0"
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "ignore": {
               "version": "7.0.10",
@@ -299,7 +299,7 @@
           "overridden": false,
           "dependencies": {
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             }
           }
         },
@@ -309,7 +309,7 @@
           "overridden": false,
           "dependencies": {
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             }
           }
         },
@@ -342,7 +342,7 @@
             },
             "eslint-plugin-import": {},
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "get-tsconfig": {
               "version": "4.14.0",
@@ -452,7 +452,7 @@
                   "version": "8.73.0"
                 },
                 "eslint": {
-                  "version": "10.15.0"
+                  "version": "10.16.0"
                 },
                 "typescript": {
                   "version": "6.0.3"
@@ -482,7 +482,7 @@
             },
             "eslint-import-resolver-node": {},
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "is-glob": {
               "version": "4.0.3"
@@ -545,7 +545,7 @@
                   "overridden": false,
                   "dependencies": {
                     "eslint": {
-                      "version": "10.15.0"
+                      "version": "10.16.0"
                     },
                     "semver": {
                       "version": "7.8.6"
@@ -553,12 +553,12 @@
                   }
                 },
                 "eslint": {
-                  "version": "10.15.0"
+                  "version": "10.16.0"
                 }
               }
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "get-tsconfig": {
               "version": "4.14.0"
@@ -614,7 +614,7 @@
               "version": "1.4.9"
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "jsdoc-type-pratt-parser": {
               "version": "9.5.0",
@@ -766,7 +766,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "find-up-simple": {
               "version": "1.0.1",
@@ -859,7 +859,7 @@
           }
         },
         "eslint": {
-          "version": "10.15.0"
+          "version": "10.16.0"
         },
         "globals": {
           "version": "17.14.0",
@@ -903,7 +903,7 @@
                       "version": "4.4.3"
                     },
                     "eslint": {
-                      "version": "10.15.0"
+                      "version": "10.16.0"
                     },
                     "ts-api-utils": {
                       "version": "2.5.0"
@@ -930,7 +930,7 @@
                   }
                 },
                 "eslint": {
-                  "version": "10.15.0"
+                  "version": "10.16.0"
                 },
                 "ignore": {
                   "version": "7.0.10"
@@ -974,7 +974,7 @@
                   "version": "4.4.3"
                 },
                 "eslint": {
-                  "version": "10.15.0"
+                  "version": "10.16.0"
                 },
                 "typescript": {
                   "version": "6.0.3"
@@ -1046,7 +1046,7 @@
               "version": "8.73.0"
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             },
             "typescript": {
               "version": "6.0.3"
@@ -1200,8 +1200,8 @@
       }
     },
     "eslint": {
-      "version": "10.15.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-10.15.0.tgz",
+      "version": "10.16.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-10.16.0.tgz",
       "overridden": false,
       "dependencies": {
         "@eslint-community/eslint-utils": {
@@ -1215,7 +1215,7 @@
               "overridden": false
             },
             "eslint": {
-              "version": "10.15.0"
+              "version": "10.16.0"
             }
           }
         },
@@ -1225,8 +1225,8 @@
           "overridden": false
         },
         "@eslint/config-array": {
-          "version": "0.23.6",
-          "resolved": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.23.6.tgz",
+          "version": "0.23.7",
+          "resolved": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.23.7.tgz",
           "overridden": false,
           "dependencies": {
             "@eslint/object-schema": {
@@ -2307,8 +2307,8 @@
       }
     },
     "wrangler": {
-      "version": "4.168.0",
-      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.168.0.tgz",
+      "version": "4.169.0",
+      "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.169.0.tgz",
       "overridden": false,
       "dependencies": {
         "@cloudflare/kv-asset-handler": {
@@ -2325,14 +2325,14 @@
               "version": "2.0.0-rc.24"
             },
             "workerd": {
-              "version": "1.20261123.1"
+              "version": "1.20261127.1"
             }
           }
         },
         "@cloudflare/workers-types": {},
         "@cloudflare/workers-utils": {
-          "version": "0.57.0",
-          "resolved": "https://registry.npmjs.org/@cloudflare/workers-utils/-/workers-utils-0.57.0.tgz",
+          "version": "0.58.0",
+          "resolved": "https://registry.npmjs.org/@cloudflare/workers-utils/-/workers-utils-0.58.0.tgz",
           "overridden": false,
           "dependencies": {
             "@cspotcode/source-map-support": {
@@ -2663,8 +2663,8 @@
           "version": "2.3.3"
         },
         "miniflare": {
-          "version": "5.20261123.1-beta",
-          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261123.1-beta.tgz",
+          "version": "5.20261127.0-beta",
+          "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20261127.0-beta.tgz",
           "overridden": false,
           "dependencies": {
             "@cspotcode/source-map-support": {
@@ -2731,7 +2731,7 @@
               "version": "7.30.2"
             },
             "workerd": {
-              "version": "1.20261123.1"
+              "version": "1.20261127.1"
             },
             "ws": {
               "version": "8.21.0",
@@ -2833,14 +2833,14 @@
           }
         },
         "workerd": {
-          "version": "1.20261123.1",
-          "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20261123.1.tgz",
+          "version": "1.20261127.1",
+          "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20261127.1.tgz",
           "overridden": false,
           "dependencies": {
             "@cloudflare/workerd-darwin-64": {},
             "@cloudflare/workerd-darwin-arm64": {
-              "version": "1.20261123.1",
-              "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20261123.1.tgz",
+              "version": "1.20261127.1",
+              "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20261127.1.tgz",
               "overridden": false
             },
             "@cloudflare/workerd-linux-64": {},
